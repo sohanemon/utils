@@ -1,0 +1,29 @@
+{
+  "name": "@sohanemon/utils",
+  "version": "1.0.0",
+  "description": "",
+  "source": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "sohanemon",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.5.7",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "clsx": "^2.0.0",
+    "react": "^18.2.0",
+    "tailwind-merge": "^1.14.0"
+  }
+}
