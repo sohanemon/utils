@@ -1,6 +1,10 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+interface ColorObject {
+  [key: string]: string | { DEFAULT: string; foreground?: string };
+}
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -58,4 +62,33 @@ export function cssColorVariable(colors: Record<string, string>) {
 export function cleanSrc(src: string) {
   if (src.includes('/public/')) return src.replace('/public/', '/');
   return src;
+}
+
+export function tailwindColorObject(
+  input: Record<string, string>
+): ColorObject {
+  const transformed: ColorObject = {};
+
+  for (const key in input) {
+    if (Object.prototype.hasOwnProperty.call(input, key)) {
+      if (key.endsWith('Foreground')) {
+        const baseKey = key.replace(/Foreground$/, '');
+        if (!transformed[baseKey]) {
+          // @ts-ignore
+          transformed[baseKey] = {};
+        }
+        // @ts-ignore
+        transformed[baseKey].foreground = `hsl(var(--${key}))`;
+      } else {
+        if (!transformed[key]) {
+          transformed[key] = { DEFAULT: `hsl(var(--${key}))` };
+        } else {
+          // @ts-ignore
+          transformed[key].DEFAULT = `hsl(var(--${key}))`;
+        }
+      }
+    }
+  }
+
+  return transformed;
 }

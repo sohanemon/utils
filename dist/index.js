@@ -1,19 +1,13 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.cleanSrc = exports.cssColorVariable = exports.kebabCase = exports.isNavActive = exports.cn = void 0;
-const clsx_1 = require("clsx");
-const tailwind_merge_1 = require("tailwind-merge");
-function cn(...inputs) {
-    return (0, tailwind_merge_1.twMerge)((0, clsx_1.clsx)(inputs));
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+export function cn(...inputs) {
+    return twMerge(clsx(inputs));
 }
-exports.cn = cn;
-function isNavActive(href, path) {
-    return href === '/' ? path === '/' : path === null || path === void 0 ? void 0 : path.includes(href);
+export function isNavActive(href, path) {
+    return href === '/' ? path === '/' : path?.includes(href);
 }
-exports.isNavActive = isNavActive;
 function hexToHSLFormatted(hexColor) {
-    var _a;
-    const [r, g, b] = (_a = hexColor.match(/\w\w/g)) === null || _a === void 0 ? void 0 : _a.map((c) => parseInt(c, 16) / 255);
+    const [r, g, b] = hexColor.match(/\w\w/g)?.map((c) => parseInt(c, 16) / 255);
     const maxVal = Math.max(r, g, b), minVal = Math.min(r, g, b);
     const lightness = (maxVal + minVal) / 2;
     const delta = maxVal - minVal;
@@ -37,21 +31,44 @@ function extractHSLValues(input) {
         throw new Error(`Invalid HSL format: ${input}`);
     return `${matches[1]} ${matches[2]}% ${matches[3]}%`;
 }
-function kebabCase(camelCase) {
+export function kebabCase(camelCase) {
     return camelCase.replace(/[A-Z]+(?![a-z])|[A-Z]/g, ($, ofs) => (ofs ? '-' : '') + $.toLowerCase());
 }
-exports.kebabCase = kebabCase;
-function cssColorVariable(colors) {
+export function cssColorVariable(colors) {
     const temp = {};
     Object.keys(colors).map((key) => {
         temp[`--${kebabCase(key)}`] = extractHSLValues(colors[key]);
     });
     return temp;
 }
-exports.cssColorVariable = cssColorVariable;
-function cleanSrc(src) {
+export function cleanSrc(src) {
     if (src.includes('/public/'))
         return src.replace('/public/', '/');
     return src;
 }
-exports.cleanSrc = cleanSrc;
+export function tailwindColorObject(input) {
+    const transformed = {};
+    for (const key in input) {
+        if (Object.prototype.hasOwnProperty.call(input, key)) {
+            if (key.endsWith('Foreground')) {
+                const baseKey = key.replace(/Foreground$/, '');
+                if (!transformed[baseKey]) {
+                    // @ts-ignore
+                    transformed[baseKey] = {};
+                }
+                // @ts-ignore
+                transformed[baseKey].foreground = `hsl(var(--${key}))`;
+            }
+            else {
+                if (!transformed[key]) {
+                    transformed[key] = { DEFAULT: `hsl(var(--${key}))` };
+                }
+                else {
+                    // @ts-ignore
+                    transformed[key].DEFAULT = `hsl(var(--${key}))`;
+                }
+            }
+        }
+    }
+    return transformed;
+}
