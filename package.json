@@ -1,10 +1,26 @@
 {
   "name": "@sohanemon/utils",
-  "version": "2.1.2",
+  "version": "3.0.4",
   "description": "",
   "source": "./src/index.ts",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./hooks": "./dist/hooks/index.js",
+    "./components": "./dist/components/index.js",
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "hooks": [
+        "dist/hooks/index.d.ts"
+      ],
+      "components": [
+        "dist/components/index.d.ts"
+      ]
+    }
+  },
   "files": [
     "dist",
     "README.md"
