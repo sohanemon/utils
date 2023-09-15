@@ -123,6 +123,20 @@ export function useUpdateEffect(effect: EffectCallback, deps: any[]) {
   }, deps);
 }
 
+export function useDebounce<T>(state: T, delay: number = 500): T {
+  const [debouncedState, setDebouncedState] = useState<T>(state);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedState(state), delay);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [state, delay]);
+
+  return debouncedState;
+}
+
 export const useIsomorphicEffect =
   typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
