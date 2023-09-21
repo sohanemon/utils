@@ -1,7 +1,6 @@
 import { EffectCallback } from 'react';
 export declare const useClickOutside: (callback?: () => void) => any;
 export declare function useMediaQuery(tailwindBreakpoint: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | `(${string})`): any;
-export declare const useSwiperRef: () => any[];
 export declare function useEffectOnce(effect: EffectCallback): void;
 export declare function useUpdateEffect(effect: EffectCallback, deps: any[]): void;
 export declare function useDebounce<T>(state: T, delay?: number): T;

@@ -76,35 +76,6 @@ export function useMediaQuery(
   return matches;
 }
 
-export const useSwiperRef = () => {
-  const [navigationElement, setNavigationElement] = useState(null);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    setNavigationElement(ref.current);
-  }, []);
-
-  return [navigationElement, ref as any];
-};
-
-// call the hook
-// const [nextEl, nextRef] = useSwiperRef();
-// const [prevEl, prevRef] = useSwiperRef();
-
-// add to navigation module
-// <Swiper
-//   modules={[Navigation]}
-//   navigation={{
-//     prevEl,
-//     nextEl,
-//   }}
-// >
-//   ...
-// </Swiper>;
-
-// add ref to any element which may trigger
-// <button ref={nextRef}>...</button>;
-
 export function useEffectOnce(effect: EffectCallback) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(effect, []);
