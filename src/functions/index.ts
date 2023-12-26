@@ -6,7 +6,8 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function isNavActive(href: string, path: string) {
-  return href === '/' ? path === '/' : path?.includes(href);
+  const regex = new RegExp(`^\/?${href}(\/|$)`);
+  return regex.test(path);
 }
 
 export function cleanSrc(src: string) {

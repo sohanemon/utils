@@ -4,7 +4,8 @@ export function cn(...inputs) {
     return twMerge(clsx(inputs));
 }
 export function isNavActive(href, path) {
-    return href === '/' ? path === '/' : path?.includes(href);
+    const regex = new RegExp(`^\/?${href}(\/|$)`);
+    return regex.test(path);
 }
 export function cleanSrc(src) {
     if (src.includes('/public/'))
