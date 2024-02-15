@@ -101,3 +101,29 @@ export function useWindowEvent(type, listener, options) {
         return () => window.removeEventListener(type, listener, options);
     }, [type, listener]);
 }
+// Custom hook for using local storage with a specified key and default value
+const useLocalStorage = (key, defaultValue) => {
+    const [storedValue, setStoredValue] = useState(defaultValue);
+    // Use effect to retrieve the stored value from local storage on component mount
+    useEffect(() => {
+        const value = localStorage.getItem(key);
+        if (value) {
+            setStoredValue(JSON.parse(value));
+        }
+    }, [key]);
+    // Function to update the stored value in local storage and state
+    const updateStoredValue = (valueOrFn) => {
+        let newValue;
+        if (typeof valueOrFn === 'function') {
+            const updateFunction = valueOrFn;
+            newValue = updateFunction(storedValue);
+        }
+        else {
+            newValue = valueOrFn;
+        }
+        localStorage.setItem(key, JSON.stringify(newValue));
+        setStoredValue(newValue);
+    };
+    return [storedValue, updateStoredValue];
+};
+export default useLocalStorage;
