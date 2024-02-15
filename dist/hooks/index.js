@@ -102,7 +102,7 @@ export function useWindowEvent(type, listener, options) {
     }, [type, listener]);
 }
 // Custom hook for using local storage with a specified key and default value
-const useLocalStorage = (key, defaultValue) => {
+export const useLocalStorage = (key, defaultValue) => {
     const [storedValue, setStoredValue] = useState(defaultValue);
     // Use effect to retrieve the stored value from local storage on component mount
     useEffect(() => {
@@ -126,4 +126,3 @@ const useLocalStorage = (key, defaultValue) => {
     };
     return [storedValue, updateStoredValue];
 };
-export default useLocalStorage;

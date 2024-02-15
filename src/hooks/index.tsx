@@ -147,7 +147,7 @@ export function useWindowEvent<K extends string = keyof WindowEventMap>(
 type LocalStorageValue<T> = [T, Dispatch<SetStateAction<T>>];
 
 // Custom hook for using local storage with a specified key and default value
-const useLocalStorage = <T extends Record<string, any>>(
+export const useLocalStorage = <T extends Record<string, any>>(
   key: string,
   defaultValue: T
 ): LocalStorageValue<T> => {
@@ -176,5 +176,3 @@ const useLocalStorage = <T extends Record<string, any>>(
 
   return [storedValue, updateStoredValue];
 };
-
-export default useLocalStorage;
