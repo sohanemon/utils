@@ -1,7 +1,9 @@
 'use client';
 
 import {
+  Dispatch,
   EffectCallback,
+  SetStateAction,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -140,3 +142,39 @@ export function useWindowEvent<K extends string = keyof WindowEventMap>(
     return () => window.removeEventListener(type, listener, options);
   }, [type, listener]);
 }
+
+// Define a tuple type for the local storage value and its update function
+type LocalStorageValue<T> = [T, Dispatch<SetStateAction<T>>];
+
+// Custom hook for using local storage with a specified key and default value
+const useLocalStorage = <T extends Record<string, any>>(
+  key: string,
+  defaultValue: T
+): LocalStorageValue<T> => {
+  const [storedValue, setStoredValue] = useState<T>(defaultValue);
+
+  // Use effect to retrieve the stored value from local storage on component mount
+  useEffect(() => {
+    const value = localStorage.getItem(key);
+    if (value) {
+      setStoredValue(JSON.parse(value));
+    }
+  }, [key]);
+
+  // Function to update the stored value in local storage and state
+  const updateStoredValue = (valueOrFn: SetStateAction<T>) => {
+    let newValue;
+    if (typeof valueOrFn === 'function') {
+      const updateFunction = valueOrFn as (prevState: T) => T;
+      newValue = updateFunction(storedValue);
+    } else {
+      newValue = valueOrFn;
+    }
+    localStorage.setItem(key, JSON.stringify(newValue));
+    setStoredValue(newValue);
+  };
+
+  return [storedValue, updateStoredValue];
+};
+
+export default useLocalStorage;
