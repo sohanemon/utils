@@ -1,2 +1,2 @@
-export { Icon as Iconify } from '@iconify/react';
-export declare function TailwindIndicator(): any;
+import * as React from 'react';
+export declare const ResponsiveIndicator: React.FC;

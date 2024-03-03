@@ -176,3 +176,30 @@ export const useLocalStorage = <T extends Record<string, any>>(
 
   return [storedValue, updateStoredValue];
 };
+
+// Custom hook for using URL parameters with a specified key and default value
+export const useUrlParams = <T extends string | number | boolean>(
+  key: string,
+  defaultValue: T
+): [T, (value: T) => void] => {
+  const [value, setValue] = useState<T>(defaultValue);
+
+  // Use effect to retrieve the value from URL parameters on component mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const value = params.get(key);
+    if (value !== null) {
+      setValue(value as T);
+    }
+  }, [key]);
+
+  // Function to update the value in URL parameters and state
+  const updateValue = (newValue: T) => {
+    const params = new URLSearchParams(window.location.search);
+    params.set(key, String(newValue));
+    window.history.pushState({}, '', `${window.location.pathname}?${params}`);
+    setValue(newValue);
+  };
+
+  return [value, updateValue];
+};

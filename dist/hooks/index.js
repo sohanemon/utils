@@ -126,3 +126,23 @@ export const useLocalStorage = (key, defaultValue) => {
     };
     return [storedValue, updateStoredValue];
 };
+// Custom hook for using URL parameters with a specified key and default value
+export const useUrlParams = (key, defaultValue) => {
+    const [value, setValue] = useState(defaultValue);
+    // Use effect to retrieve the value from URL parameters on component mount
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const value = params.get(key);
+        if (value !== null) {
+            setValue(value);
+        }
+    }, [key]);
+    // Function to update the value in URL parameters and state
+    const updateValue = (newValue) => {
+        const params = new URLSearchParams(window.location.search);
+        params.set(key, String(newValue));
+        window.history.pushState({}, '', `${window.location.pathname}?${params}`);
+        setValue(newValue);
+    };
+    return [value, updateValue];
+};
