@@ -1,6 +1,6 @@
-'use client';
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, } from 'react';
-export const useClickOutside = (callback = () => alert('clicked outside')) => {
+"use client";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, } from "react";
+export const useClickOutside = (callback = () => alert("clicked outside")) => {
     const ref = useRef(null);
     const listener = (e) => {
         if (ref.current && !ref.current.contains(e.target)) {
@@ -8,11 +8,11 @@ export const useClickOutside = (callback = () => alert('clicked outside')) => {
         }
     };
     useEffect(() => {
-        document.addEventListener('mousedown', listener);
-        document.addEventListener('touchstart', listener);
+        document.addEventListener("mousedown", listener);
+        document.addEventListener("touchstart", listener);
         return () => {
-            document.removeEventListener('mousedown', listener);
-            document.removeEventListener('touchstart', listener);
+            document.removeEventListener("mousedown", listener);
+            document.removeEventListener("touchstart", listener);
         };
     });
     return ref;
@@ -20,22 +20,22 @@ export const useClickOutside = (callback = () => alert('clicked outside')) => {
 export function useMediaQuery(tailwindBreakpoint) {
     const parsedQuery = useMemo(() => {
         switch (tailwindBreakpoint) {
-            case 'sm':
-                return '(min-width: 640px)';
-            case 'md':
-                return '(min-width: 768px)';
-            case 'lg':
-                return '(min-width: 1024px)';
-            case 'xl':
-                return '(min-width: 1280px)';
-            case '2xl':
-                return '(min-width: 1536px)';
+            case "sm":
+                return "(min-width: 640px)";
+            case "md":
+                return "(min-width: 768px)";
+            case "lg":
+                return "(min-width: 1024px)";
+            case "xl":
+                return "(min-width: 1280px)";
+            case "2xl":
+                return "(min-width: 1536px)";
             default:
                 return tailwindBreakpoint;
         }
     }, [tailwindBreakpoint]);
     const getMatches = (parsedQuery) => {
-        if (typeof window !== 'undefined') {
+        if (typeof window !== "undefined") {
             return window.matchMedia(parsedQuery).matches;
         }
         return false;
@@ -47,9 +47,9 @@ export function useMediaQuery(tailwindBreakpoint) {
     useEffect(() => {
         const matchMedia = window.matchMedia(parsedQuery);
         handleChange();
-        matchMedia.addEventListener('change', handleChange);
+        matchMedia.addEventListener("change", handleChange);
         return () => {
-            matchMedia.removeEventListener('change', handleChange);
+            matchMedia.removeEventListener("change", handleChange);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [parsedQuery]);
@@ -81,7 +81,7 @@ export function useDebounce(state, delay = 500) {
     }, [state, delay]);
     return debouncedState;
 }
-export const useIsomorphicEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+export const useIsomorphicEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 export function useTimeout(callback, delay = 1000) {
     const savedCallback = useRef(callback);
     useIsomorphicEffect(() => {
@@ -114,7 +114,7 @@ export const useLocalStorage = (key, defaultValue) => {
     // Function to update the stored value in local storage and state
     const updateStoredValue = (valueOrFn) => {
         let newValue;
-        if (typeof valueOrFn === 'function') {
+        if (typeof valueOrFn === "function") {
             const updateFunction = valueOrFn;
             newValue = updateFunction(storedValue);
         }
@@ -141,7 +141,7 @@ export const useUrlParams = (key, defaultValue) => {
     const updateValue = (newValue) => {
         const params = new URLSearchParams(window.location.search);
         params.set(key, String(newValue));
-        window.history.pushState({}, '', `${window.location.pathname}?${params}`);
+        window.history.pushState({}, "", `${window.location.pathname}?${params}`);
         setValue(newValue);
     };
     return [value, updateValue];
