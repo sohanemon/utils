@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-export { Icon as Iconify } from "@iconify/react";
-export { MediaWrapper } from "./media-wrapper";
+export { Icon as Iconify } from '@iconify/react';
+export { MediaWrapper } from './media-wrapper';
 export {
-	ResponsiveIndicator,
-	ResponsiveIndicator as TailwindIndicator,
-} from "./responsive-indicator";
+  ResponsiveIndicator,
+  ResponsiveIndicator as TailwindIndicator,
+} from './responsive-indicator';
