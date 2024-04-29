@@ -1,6 +1,6 @@
 {
   "name": "@sohanemon/utils",
-  "version": "4.0.12",
+  "version": "4.0.14",
   "description": "",
   "source": "./src/index.ts",
   "main": "./dist/index.js",
@@ -13,23 +13,17 @@
   },
   "typesVersions": {
     "*": {
-      "hooks": [
-        "dist/hooks/index.d.ts"
-      ],
-      "components": [
-        "dist/components/index.d.ts"
-      ]
+      "hooks": ["dist/hooks/index.d.ts"],
+      "components": ["dist/components/index.d.ts"]
     }
   },
-  "files": [
-    "dist",
-    "README.md"
-  ],
+  "files": ["dist", "README.md"],
   "scripts": {
     "build": "tsc",
-    "build:watch": "tsc --watch"
+    "build:watch": "tsc --watch",
+    "export": "tsc && npm publish"
   },
-  "keywords": [],
+  "keywords": ["utils", "cn"],
   "author": "sohanemon",
   "license": "ISC",
   "devDependencies": {
