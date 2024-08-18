@@ -1,6 +1,6 @@
 {
   "name": "@sohanemon/utils",
-  "version": "4.0.15",
+  "version": "4.0.17",
   "description": "",
   "type": "module",
   "source": "./src/index.ts",
@@ -8,12 +8,15 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
+    "./core": "./dist/index.js",
     "./hooks": "./dist/hooks/index.js",
-    "./components": "./dist/components/index.js",
-    "./package.json": "./package.json"
+    "./components": "./dist/components/index.js"
   },
   "typesVersions": {
     "*": {
+      "core": [
+        "dist/index.d.ts"
+      ],
       "hooks": [
         "dist/hooks/index.d.ts"
       ],
@@ -45,6 +48,5 @@
     "clsx": "^2.0.0",
     "react": "^18.2.0",
     "tailwind-merge": "^1.14.0"
-  },
-  "packageManager": "pnpm@9.7.1+sha512.faf344af2d6ca65c4c5c8c2224ea77a81a5e8859cbc4e06b1511ddce2f0151512431dd19e6aff31f2c6a8f5f2aced9bd2273e1fed7dd4de1868984059d2c4247"
+  }
 }
