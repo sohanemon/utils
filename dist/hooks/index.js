@@ -145,7 +145,7 @@ export const useUrlParams = (key, defaultValue) => {
     return [value, updateValue];
 };
 export const useAsync = (fn, opts = {}) => {
-    const { initialArgs, callback = {}, mode = "onTrigger" } = opts;
+    const { initialArgs, callback = {}, mode = 'onTrigger' } = opts;
     const { onSuccess, onError, onExecute, onSettle } = callback;
     const [isLoading, setIsLoading] = useState(false);
     const [result, setValue] = useState(null);
@@ -157,10 +157,12 @@ export const useAsync = (fn, opts = {}) => {
         setError(null);
         onExecute?.();
         try {
-            startTransition(async () => {
-                const response = await fn(args);
-                setValue(response);
-                onSuccess?.(response);
+            startTransition(() => {
+                (async () => {
+                    const response = await fn(args);
+                    setValue(response);
+                    onSuccess?.(response);
+                })();
             });
         }
         catch (error) {
@@ -172,7 +174,7 @@ export const useAsync = (fn, opts = {}) => {
             onSettle?.();
         }
     }, [fn, onExecute, onSuccess, onError, onSettle]);
-    useEffect(() => {
+    useIsomorphicEffect(() => {
         if (mode === 'onLoad') {
             execute(initialArgs);
         }
@@ -184,3 +186,29 @@ export const useAsync = (fn, opts = {}) => {
         error,
     };
 };
+export const useQuerySelector = (selector) => {
+    const [element, setElement] = useState(null);
+    const elementRef = useRef(null);
+    useLayoutEffect(() => {
+        const referenceElement = document.querySelector(selector);
+        if (!referenceElement)
+            return;
+        if (elementRef.current !== referenceElement) {
+            elementRef.current = referenceElement;
+            setElement(referenceElement);
+        }
+        const resizeObserver = new ResizeObserver(() => {
+            // Only update state if the element reference changes
+            if (elementRef.current !== referenceElement) {
+                elementRef.current = referenceElement;
+                setElement(referenceElement);
+            }
+        });
+        resizeObserver.observe(referenceElement);
+        return () => {
+            resizeObserver.disconnect();
+        };
+    }, [selector]);
+    return element;
+};
+export default useQuerySelector;

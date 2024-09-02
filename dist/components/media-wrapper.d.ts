@@ -6,5 +6,5 @@ type MediaWrapperProps = React.ComponentProps<'div'> & {
     fallback?: React.ElementType;
     classNameFallback?: string;
 };
-export declare function MediaWrapper({ breakpoint, as, fallback, classNameFallback, className: classNameOriginal, ...props }: MediaWrapperProps): any;
+export declare function MediaWrapper({ breakpoint, as, fallback, classNameFallback, className: classNameOriginal, ...props }: MediaWrapperProps): import("react/jsx-runtime").JSX.Element;
 export {};

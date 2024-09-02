@@ -219,7 +219,7 @@ export const useAsync = <T extends (...args: any) => any>(
   fn: T,
   opts: UseAsyncOptions<T> = {}
 ) => {
-  const { initialArgs, callback = {}, mode = "onTrigger" } = opts;
+  const { initialArgs, callback = {}, mode = 'onTrigger' } = opts;
 
   const { onSuccess, onError, onExecute, onSettle } = callback;
 
@@ -235,10 +235,12 @@ export const useAsync = <T extends (...args: any) => any>(
       setError(null);
       onExecute?.();
       try {
-        startTransition(async () => {
-          const response = await fn(args);
-          setValue(response);
-          onSuccess?.(response);
+        startTransition(() => {
+          (async () => {
+            const response = await fn(args);
+            setValue(response);
+            onSuccess?.(response);
+          })();
         });
       } catch (error) {
         setError(error as Error);
@@ -251,7 +253,7 @@ export const useAsync = <T extends (...args: any) => any>(
     [fn, onExecute, onSuccess, onError, onSettle]
   );
 
-  useEffect(() => {
+  useIsomorphicEffect(() => {
     if (mode === 'onLoad') {
       execute(initialArgs);
     }
@@ -264,3 +266,38 @@ export const useAsync = <T extends (...args: any) => any>(
     error,
   };
 };
+
+export const useQuerySelector = <T extends Element>(
+  selector: string
+): T | null => {
+  const [element, setElement] = useState<T | null>(null);
+  const elementRef = useRef<T | null>(null);
+
+  useLayoutEffect(() => {
+    const referenceElement = document.querySelector<T>(selector);
+    if (!referenceElement) return;
+
+    if (elementRef.current !== referenceElement) {
+      elementRef.current = referenceElement;
+      setElement(referenceElement);
+    }
+
+    const resizeObserver = new ResizeObserver(() => {
+      // Only update state if the element reference changes
+      if (elementRef.current !== referenceElement) {
+        elementRef.current = referenceElement;
+        setElement(referenceElement);
+      }
+    });
+
+    resizeObserver.observe(referenceElement);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [selector]);
+
+  return element;
+};
+
+export default useQuerySelector;
