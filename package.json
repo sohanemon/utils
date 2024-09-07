@@ -1,6 +1,6 @@
 {
   "name": "@sohanemon/utils",
-  "version": "4.0.19",
+  "version": "4.0.20",
   "author": "Sohan Emon <sohanemon@outlook.com>",
   "description": "",
   "type": "module",
@@ -15,26 +15,38 @@
   },
   "typesVersions": {
     "*": {
-      "core": ["dist/index.d.ts"],
-      "hooks": ["dist/hooks/index.d.ts"],
-      "components": ["dist/components/index.d.ts"]
+      "core": [
+        "dist/index.d.ts"
+      ],
+      "hooks": [
+        "dist/hooks/index.d.ts"
+      ],
+      "components": [
+        "dist/components/index.d.ts"
+      ]
     }
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
     "export": "tsc && npm publish"
   },
-  "keywords": ["utils", "cn"],
+  "keywords": [
+    "utils",
+    "cn"
+  ],
   "license": "ISC",
   "devDependencies": {
+    "@types/node": "^22.4.0",
+    "@types/react": "^18.3.3",
     "typescript": "^5.5.4"
   },
   "dependencies": {
     "@iconify/react": "^4.1.1",
-    "@types/node": "^22.4.0",
-    "@types/react": "^18.3.3",
     "clsx": "^2.1.1",
     "react": "^18.3.1",
     "tailwind-merge": "^1.14.0"

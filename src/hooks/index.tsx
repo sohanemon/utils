@@ -67,6 +67,7 @@ export function useMediaQuery(
     setMatches(getMatches(parsedQuery));
   }
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     const matchMedia = window.matchMedia(parsedQuery);
     handleChange();
@@ -86,13 +87,13 @@ export function useEffectOnce(effect: EffectCallback) {
 export function useUpdateEffect(effect: EffectCallback, deps: any[]) {
   const isInitialMount = useRef(true);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
     } else {
       return effect();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 }
 
@@ -137,6 +138,7 @@ export function useWindowEvent<K extends string = keyof WindowEventMap>(
     : (this: Window, ev: CustomEvent) => void,
   options?: boolean | AddEventListenerOptions
 ) {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     window.addEventListener(type, listener, options);
     return () => window.removeEventListener(type, listener, options);
@@ -163,6 +165,7 @@ export const useLocalStorage = <T extends Record<string, any>>(
 
   // Function to update the stored value in local storage and state
   const updateStoredValue = (valueOrFn: SetStateAction<T>) => {
+    // biome-ignore lint/suspicious/noImplicitAnyLet: <explanation>
     let newValue;
     if (typeof valueOrFn === 'function') {
       const updateFunction = valueOrFn as (prevState: T) => T;
@@ -300,4 +303,12 @@ export const useQuerySelector = <T extends Element>(
   return element;
 };
 
-export default useQuerySelector;
+export function useIsClient() {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  return isClient;
+}
