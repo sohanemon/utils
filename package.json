@@ -1,6 +1,6 @@
 {
   "name": "@sohanemon/utils",
-  "version": "4.0.20",
+  "version": "4.0.23",
   "author": "Sohan Emon <sohanemon@outlook.com>",
   "description": "",
   "type": "module",
@@ -46,6 +46,7 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
+    "@fluid-tailwind/tailwind-merge": "^0.0.2",
     "@iconify/react": "^4.1.1",
     "clsx": "^2.1.1",
     "react": "^18.3.1",

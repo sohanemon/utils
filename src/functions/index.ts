@@ -1,8 +1,10 @@
 import { type ClassValue, clsx } from 'clsx';
 import type * as React from 'react';
-import { twMerge } from 'tailwind-merge';
+import { extendTailwindMerge } from 'tailwind-merge';
+import { withFluid } from '@fluid-tailwind/tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
+  const twMerge = extendTailwindMerge(withFluid);
   return twMerge(clsx(inputs));
 }
 
@@ -36,4 +38,13 @@ export const scrollTo = (
       behavior: 'smooth',
     });
   }
+};
+
+export const getClientSideCookie = (name: string): string | undefined => {
+  const cookieValue = document.cookie
+    .split('; ')
+    .find((row) => row.startsWith(`${name}=`))
+    ?.split('=')[1];
+
+  return cookieValue;
 };
