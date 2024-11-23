@@ -41,3 +41,15 @@ export const scrollTo = (
     });
   }
 };
+
+export const copyToClipboard = (value: string, onSuccess = () => { }) => {
+  if (typeof window === 'undefined' || !navigator.clipboard?.writeText) {
+    return;
+  }
+
+  if (!value) {
+    return;
+  }
+
+  navigator.clipboard.writeText(value).then(onSuccess);
+};

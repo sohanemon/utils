@@ -12,6 +12,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { copyToClipboard } from '../functions';
 
 export * from './action';
 
@@ -260,4 +261,20 @@ export function useLockScroll() {
       document.body.style.overflow = originalStyle;
     };
   }, []);
+}
+
+export function useCopyToClipboard({ timeout = 2000 }) {
+  const [isCopied, setIsCopied] = useState<Boolean>(false);
+
+  const copy = (value: string) => {
+    copyToClipboard(value, () => {
+      setIsCopied(true);
+
+      setTimeout(() => {
+        setIsCopied(false);
+      }, timeout);
+    });
+  };
+
+  return { isCopied, copy };
 }
