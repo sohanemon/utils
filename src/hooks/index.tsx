@@ -1,31 +1,20 @@
 'use client';
 
-import {
-  type Dispatch,
-  type EffectCallback,
-  type SetStateAction,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useTransition,
-  useCallback,
-  useRef,
-  useState,
-} from 'react';
 import { copyToClipboard } from '../functions';
+import * as React from 'react';
 
 export * from './action';
 
 export const useClickOutside = (
   callback: () => void = () => alert('clicked outside')
 ) => {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = React.useRef<HTMLDivElement>(null);
   const listener = (e: any) => {
     if (ref.current && !ref.current.contains(e.target)) {
       callback();
     }
   };
-  useEffect(() => {
+  React.useEffect(() => {
     document.addEventListener('mousedown', listener);
     document.addEventListener('touchstart', listener);
 
@@ -40,7 +29,7 @@ export const useClickOutside = (
 export function useMediaQuery(
   tailwindBreakpoint: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | `(${string})`
 ) {
-  const parsedQuery = useMemo(() => {
+  const parsedQuery = React.useMemo(() => {
     switch (tailwindBreakpoint) {
       case 'sm':
         return '(min-width: 640px)';
@@ -64,14 +53,14 @@ export function useMediaQuery(
     return false;
   };
 
-  const [matches, setMatches] = useState(getMatches(parsedQuery));
+  const [matches, setMatches] = React.useState(getMatches(parsedQuery));
 
   function handleChange() {
     setMatches(getMatches(parsedQuery));
   }
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  useEffect(() => {
+  React.useEffect(() => {
     const matchMedia = window.matchMedia(parsedQuery);
     handleChange();
     matchMedia.addEventListener('change', handleChange);
@@ -83,15 +72,15 @@ export function useMediaQuery(
   return matches;
 }
 
-export function useEffectOnce(effect: EffectCallback) {
-  useEffect(effect, []);
+export function useEffectOnce(effect: React.EffectCallback) {
+  React.useEffect(effect, []);
 }
 
-export function useUpdateEffect(effect: EffectCallback, deps: any[]) {
-  const isInitialMount = useRef(true);
+export function useUpdateEffect(effect: React.EffectCallback, deps: any[]) {
+  const isInitialMount = React.useRef(true);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  useEffect(() => {
+  React.useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
     } else {
@@ -101,9 +90,9 @@ export function useUpdateEffect(effect: EffectCallback, deps: any[]) {
 }
 
 export function useDebounce<T>(state: T, delay = 500): T {
-  const [debouncedState, setDebouncedState] = useState<T>(state);
+  const [debouncedState, setDebouncedState] = React.useState<T>(state);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const timer = setTimeout(() => setDebouncedState(state), delay);
 
     return () => {
@@ -115,15 +104,15 @@ export function useDebounce<T>(state: T, delay = 500): T {
 }
 
 export const useIsomorphicEffect =
-  typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+  typeof window !== 'undefined' ? React.useLayoutEffect : React.useEffect;
 
 export function useTimeout(callback: () => void, delay: number | null = 1000) {
-  const savedCallback = useRef(callback);
+  const savedCallback = React.useRef(callback);
   useIsomorphicEffect(() => {
     savedCallback.current = callback;
   }, [callback]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!delay && delay !== 0) {
       return;
     }
@@ -142,24 +131,24 @@ export function useWindowEvent<K extends string = keyof WindowEventMap>(
   options?: boolean | AddEventListenerOptions
 ) {
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  useEffect(() => {
+  React.useEffect(() => {
     window.addEventListener(type, listener, options);
     return () => window.removeEventListener(type, listener, options);
   }, [type, listener]);
 }
 
 // Define a tuple type for the local storage value and its update function
-type LocalStorageValue<T> = [T, Dispatch<SetStateAction<T>>];
+type LocalStorageValue<T> = [T, React.Dispatch<React.SetStateAction<T>>];
 
 // Custom hook for using local storage with a specified key and default value
 export const useLocalStorage = <T extends Record<string, any>>(
   key: string,
   defaultValue: T
 ): LocalStorageValue<T> => {
-  const [storedValue, setStoredValue] = useState<T>(defaultValue);
+  const [storedValue, setStoredValue] = React.useState<T>(defaultValue);
 
   // Use effect to retrieve the stored value from local storage on component mount
-  useEffect(() => {
+  React.useEffect(() => {
     const value = localStorage.getItem(key);
     if (value) {
       setStoredValue(JSON.parse(value));
@@ -167,7 +156,7 @@ export const useLocalStorage = <T extends Record<string, any>>(
   }, [key]);
 
   // Function to update the stored value in local storage and state
-  const updateStoredValue = (valueOrFn: SetStateAction<T>) => {
+  const updateStoredValue = (valueOrFn: React.SetStateAction<T>) => {
     // biome-ignore lint/suspicious/noImplicitAnyLet: <explanation>
     let newValue;
     if (typeof valueOrFn === 'function') {
@@ -188,10 +177,10 @@ export const useUrlParams = <T extends string | number | boolean>(
   key: string,
   defaultValue: T
 ): [T, (value: T) => void] => {
-  const [value, setValue] = useState<T>(defaultValue);
+  const [value, setValue] = React.useState<T>(defaultValue);
 
   // Use effect to retrieve the value from URL parameters on component mount
-  useEffect(() => {
+  React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const value = params.get(key);
     if (value !== null) {
@@ -213,10 +202,10 @@ export const useUrlParams = <T extends string | number | boolean>(
 export const useQuerySelector = <T extends Element>(
   selector: string
 ): T | null => {
-  const [element, setElement] = useState<T | null>(null);
-  const elementRef = useRef<T | null>(null);
+  const [element, setElement] = React.useState<T | null>(null);
+  const elementRef = React.useRef<T | null>(null);
 
-  useLayoutEffect(() => {
+  React.useLayoutEffect(() => {
     const referenceElement = document.querySelector<T>(selector);
     if (!referenceElement) return;
 
@@ -244,9 +233,9 @@ export const useQuerySelector = <T extends Element>(
 };
 
 export function useIsClient() {
-  const [isClient, setIsClient] = useState(false);
+  const [isClient, setIsClient] = React.useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     setIsClient(true);
   }, []);
 
@@ -254,7 +243,7 @@ export function useIsClient() {
 }
 
 export function useLockScroll() {
-  useLayoutEffect(() => {
+  React.useLayoutEffect(() => {
     const originalStyle = window.getComputedStyle(document.body).overflow;
     document.body.style.overflow = 'hidden';
     return () => {
@@ -264,7 +253,7 @@ export function useLockScroll() {
 }
 
 export function useCopyToClipboard({ timeout = 2000 }) {
-  const [isCopied, setIsCopied] = useState<Boolean>(false);
+  const [isCopied, setIsCopied] = React.useState<Boolean>(false);
 
   const copy = (value: string) => {
     copyToClipboard(value, () => {
@@ -278,3 +267,35 @@ export function useCopyToClipboard({ timeout = 2000 }) {
 
   return { isCopied, copy };
 }
+
+type CalculationProps = {
+  blockIds: string[];
+  dynamic?: boolean;
+  margin?: number;
+};
+
+export const useHeightCalculation = ({
+  blockIds = [],
+  margin = 0,
+  dynamic = false,
+}: CalculationProps) => {
+  const [height, setTableHeight] = React.useState(500);
+
+  const handleResize = () => {
+    const blcokHeight = blockIds.reduce(
+      (prevHeight, id) =>
+        prevHeight + (document.getElementById(id)?.clientHeight || 0),
+      0
+    );
+    setTableHeight(window.innerHeight - blcokHeight - margin);
+  };
+
+  useIsomorphicEffect(() => {
+    handleResize();
+    if (!dynamic) return;
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return height;
+};
