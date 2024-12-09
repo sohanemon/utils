@@ -270,7 +270,7 @@ export function useCopyToClipboard({ timeout = 2000 }) {
 
 type CalculationProps = {
   blockIds: string[];
-  dynamic?: boolean;
+  dynamic?: boolean | string;
   margin?: number;
 };
 
@@ -285,7 +285,7 @@ export const useHeightCalculation = ({
     const blcokHeight = blockIds.reduce(
       (prevHeight, id) =>
         prevHeight + (document.getElementById(id)?.clientHeight || 0),
-      0
+      0,
     );
     setTableHeight(window.innerHeight - blcokHeight - margin);
   };
@@ -293,6 +293,17 @@ export const useHeightCalculation = ({
   useIsomorphicEffect(() => {
     handleResize();
     if (!dynamic) return;
+
+    if (typeof dynamic === 'string') {
+      const resizableElement = document.getElementById(dynamic);
+      const resizeObserver = new ResizeObserver((entries) => {
+        for (const _ of entries) handleResize();
+      });
+
+      if (resizableElement) resizeObserver.observe(resizableElement);
+      return () => resizeObserver?.disconnect();
+    }
+
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
