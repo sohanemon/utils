@@ -5,12 +5,17 @@ import * as React from 'react';
 
 export * from './action';
 
+/**
+ * Hook to detect clicks outside of a referenced element.
+ * @param callback - A function to invoke when a click outside is detected.
+ * @returns A React ref object to attach to the target element.
+ */
 export const useClickOutside = (
   callback: () => void = () => alert('clicked outside')
-) => {
+): React.RefObject<HTMLDivElement> => {
   const ref = React.useRef<HTMLDivElement>(null);
-  const listener = (e: any) => {
-    if (ref.current && !ref.current.contains(e.target)) {
+  const listener = (e: MouseEvent | TouchEvent) => {
+    if (ref.current && !ref.current.contains(e.target as Node)) {
       callback();
     }
   };
@@ -26,9 +31,14 @@ export const useClickOutside = (
   return ref;
 };
 
+/**
+ * Hook to match a media query based on Tailwind CSS breakpoints or custom queries.
+ * @param tailwindBreakpoint - The Tailwind breakpoint or custom query string.
+ * @returns A boolean indicating whether the media query matches.
+ */
 export function useMediaQuery(
   tailwindBreakpoint: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | `(${string})`
-) {
+): boolean {
   const parsedQuery = React.useMemo(() => {
     switch (tailwindBreakpoint) {
       case 'sm':
@@ -53,14 +63,15 @@ export function useMediaQuery(
     return false;
   };
 
-  const [matches, setMatches] = React.useState(getMatches(parsedQuery));
+  const [matches, setMatches] = React.useState<boolean>(
+    getMatches(parsedQuery)
+  );
 
-  function handleChange() {
+  const handleChange = () => {
     setMatches(getMatches(parsedQuery));
-  }
+  };
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  React.useEffect(() => {
+  useIsomorphicEffect(() => {
     const matchMedia = window.matchMedia(parsedQuery);
     handleChange();
     matchMedia.addEventListener('change', handleChange);
@@ -72,14 +83,26 @@ export function useMediaQuery(
   return matches;
 }
 
-export function useEffectOnce(effect: React.EffectCallback) {
+/**
+ * Runs an effect only once when the component mounts.
+ * @param effect - The effect callback function.
+ */
+export function useEffectOnce(effect: React.EffectCallback): void {
   React.useEffect(effect, []);
 }
 
-export function useUpdateEffect(effect: React.EffectCallback, deps: any[]) {
+/**
+ * Runs an effect only when dependencies update, excluding the initial render.
+ * @param effect - The effect callback function.
+ * @param deps - Dependency array for the effect.
+ */
+export function useUpdateEffect(
+  effect: React.EffectCallback,
+  deps: React.DependencyList
+): void {
   const isInitialMount = React.useRef(true);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only update specific
   React.useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
@@ -89,6 +112,12 @@ export function useUpdateEffect(effect: React.EffectCallback, deps: any[]) {
   }, deps);
 }
 
+/**
+ * Debounces a state value with a specified delay.
+ * @param state - The state value to debounce.
+ * @param delay - The debounce delay in milliseconds (default: 500ms).
+ * @returns The debounced state value.
+ */
 export function useDebounce<T>(state: T, delay = 500): T {
   const [debouncedState, setDebouncedState] = React.useState<T>(state);
 
@@ -103,10 +132,21 @@ export function useDebounce<T>(state: T, delay = 500): T {
   return debouncedState;
 }
 
+/**
+ * Hook to handle effects with layout synchronization in the browser.
+ */
 export const useIsomorphicEffect =
   typeof window !== 'undefined' ? React.useLayoutEffect : React.useEffect;
 
-export function useTimeout(callback: () => void, delay: number | null = 1000) {
+/**
+ * Hook to invoke a callback after a specified timeout.
+ * @param callback - The callback function to invoke.
+ * @param delay - The timeout delay in milliseconds (default: 1000ms).
+ */
+export function useTimeout(
+  callback: () => void,
+  delay: number | null = 1000
+): void {
   const savedCallback = React.useRef(callback);
   useIsomorphicEffect(() => {
     savedCallback.current = callback;
@@ -123,31 +163,40 @@ export function useTimeout(callback: () => void, delay: number | null = 1000) {
   }, [delay]);
 }
 
-export function useWindowEvent<K extends string = keyof WindowEventMap>(
+/**
+ * Hook to add and remove a window event listener.
+ * @param type - The type of the event to listen for.
+ * @param listener - The event listener callback.
+ * @param options - Options for the event listener.
+ */
+export function useWindowEvent<K extends keyof WindowEventMap>(
   type: K,
-  listener: K extends keyof WindowEventMap
-    ? (this: Window, ev: WindowEventMap[K]) => void
-    : (this: Window, ev: CustomEvent) => void,
+  listener: (this: Window, ev: WindowEventMap[K]) => void,
   options?: boolean | AddEventListenerOptions
-) {
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+): void {
   React.useEffect(() => {
     window.addEventListener(type, listener, options);
     return () => window.removeEventListener(type, listener, options);
-  }, [type, listener]);
+  }, [type, listener, options]);
 }
 
-// Define a tuple type for the local storage value and its update function
+/**
+ * Tuple type for local storage value and updater.
+ */
 type LocalStorageValue<T> = [T, React.Dispatch<React.SetStateAction<T>>];
 
-// Custom hook for using local storage with a specified key and default value
+/**
+ * Hook to persist state in local storage.
+ * @param key - The key for local storage.
+ * @param defaultValue - The default value if no value is found in local storage.
+ * @returns A tuple of the stored value and an updater function.
+ */
 export const useLocalStorage = <T extends Record<string, any>>(
   key: string,
   defaultValue: T
 ): LocalStorageValue<T> => {
   const [storedValue, setStoredValue] = React.useState<T>(defaultValue);
 
-  // Use effect to retrieve the stored value from local storage on component mount
   React.useEffect(() => {
     const value = localStorage.getItem(key);
     if (value) {
@@ -155,13 +204,10 @@ export const useLocalStorage = <T extends Record<string, any>>(
     }
   }, [key]);
 
-  // Function to update the stored value in local storage and state
   const updateStoredValue = (valueOrFn: React.SetStateAction<T>) => {
-    // biome-ignore lint/suspicious/noImplicitAnyLet: <explanation>
-    let newValue;
+    let newValue: T;
     if (typeof valueOrFn === 'function') {
-      const updateFunction = valueOrFn as (prevState: T) => T;
-      newValue = updateFunction(storedValue);
+      newValue = (valueOrFn as (prevState: T) => T)(storedValue);
     } else {
       newValue = valueOrFn;
     }
@@ -172,23 +218,26 @@ export const useLocalStorage = <T extends Record<string, any>>(
   return [storedValue, updateStoredValue];
 };
 
-// Custom hook for using URL parameters with a specified key and default value
+/**
+ * Hook to manage URL parameters as state.
+ * @param key - The URL parameter key.
+ * @param defaultValue - The default value if the parameter is not present.
+ * @returns A tuple of the parameter value and a setter function.
+ */
 export const useUrlParams = <T extends string | number | boolean>(
   key: string,
   defaultValue: T
 ): [T, (value: T) => void] => {
   const [value, setValue] = React.useState<T>(defaultValue);
 
-  // Use effect to retrieve the value from URL parameters on component mount
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const value = params.get(key);
-    if (value !== null) {
-      setValue(value as T);
+    const paramValue = params.get(key);
+    if (paramValue !== null) {
+      setValue(paramValue as T);
     }
   }, [key]);
 
-  // Function to update the value in URL parameters and state
   const updateValue = (newValue: T) => {
     const params = new URLSearchParams(window.location.search);
     params.set(key, String(newValue));
@@ -199,6 +248,11 @@ export const useUrlParams = <T extends string | number | boolean>(
   return [value, updateValue];
 };
 
+/**
+ * Hook to select a DOM element by CSS selector.
+ * @param selector - The CSS selector string.
+ * @returns The selected DOM element or null if not found.
+ */
 export const useQuerySelector = <T extends Element>(
   selector: string
 ): T | null => {
@@ -215,7 +269,6 @@ export const useQuerySelector = <T extends Element>(
     }
 
     const resizeObserver = new ResizeObserver(() => {
-      // Only update state if the element reference changes
       if (elementRef.current !== referenceElement) {
         elementRef.current = referenceElement;
         setElement(referenceElement);
@@ -232,7 +285,11 @@ export const useQuerySelector = <T extends Element>(
   return element;
 };
 
-export function useIsClient() {
+/**
+ * Hook to detect if the code is running on the client side.
+ * @returns A boolean indicating whether the code is running on the client.
+ */
+export function useIsClient(): boolean {
   const [isClient, setIsClient] = React.useState(false);
 
   React.useEffect(() => {
@@ -242,7 +299,10 @@ export function useIsClient() {
   return isClient;
 }
 
-export function useLockScroll() {
+/**
+ * Hook to lock scroll by disabling body overflow.
+ */
+export function useLockScroll(): void {
   React.useLayoutEffect(() => {
     const originalStyle = window.getComputedStyle(document.body).overflow;
     document.body.style.overflow = 'hidden';
@@ -252,8 +312,13 @@ export function useLockScroll() {
   }, []);
 }
 
-export function useCopyToClipboard({ timeout = 2000 }) {
-  const [isCopied, setIsCopied] = React.useState<Boolean>(false);
+/**
+ * Hook to copy text to the clipboard and track the copy status.
+ * @param timeout - The timeout duration in milliseconds to reset the copy status (default: 2000ms).
+ * @returns An object with the `isCopied` state and `copy` function.
+ */
+export function useCopyToClipboard({ timeout = 2000 }: { timeout?: number }) {
+  const [isCopied, setIsCopied] = React.useState<boolean>(false);
 
   const copy = (value: string) => {
     copyToClipboard(value, () => {
@@ -268,26 +333,34 @@ export function useCopyToClipboard({ timeout = 2000 }) {
   return { isCopied, copy };
 }
 
+/**
+ * Properties for height calculation.
+ */
 type CalculationProps = {
   blockIds: string[];
   dynamic?: boolean | string;
   margin?: number;
 };
 
+/**
+ * Hook to calculate the height of an element based on viewport and other block heights.
+ * @param params - Configuration object for height calculation.
+ * @returns The calculated height.
+ */
 export const useHeightCalculation = ({
   blockIds = [],
   margin = 0,
   dynamic = false,
-}: CalculationProps) => {
-  const [height, setTableHeight] = React.useState(500);
+}: CalculationProps): number => {
+  const [height, setTableHeight] = React.useState<number>(500);
 
   const handleResize = () => {
-    const blcokHeight = blockIds.reduce(
+    const blockHeight = blockIds.reduce(
       (prevHeight, id) =>
         prevHeight + (document.getElementById(id)?.clientHeight || 0),
-      0,
+      0
     );
-    setTableHeight(window.innerHeight - blcokHeight - margin);
+    setTableHeight(window.innerHeight - blockHeight - margin);
   };
 
   useIsomorphicEffect(() => {

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useEffectOnce, useIsomorphicEffect } from '.';
+import { useIsomorphicEffect } from '.';
 
 type ActionType<Input, Result> = (input: Input) => Promise<Result>;
 type Status = 'idle' | 'loading' | 'success' | 'error';
