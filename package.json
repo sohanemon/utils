@@ -1,6 +1,6 @@
 {
   "name": "@sohanemon/utils",
-  "version": "4.0.27",
+  "version": "4.0.28",
   "author": "Sohan Emon <sohanemon@outlook.com>",
   "description": "",
   "type": "module",
@@ -17,6 +17,9 @@
     "*": {
       "core": [
         "dist/index.d.ts"
+      ],
+      "types": [
+        "dist/types/index.d.ts"
       ],
       "hooks": [
         "dist/hooks/index.d.ts"
