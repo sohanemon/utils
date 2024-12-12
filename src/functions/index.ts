@@ -17,20 +17,18 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
+ * @deprecated Use isLinkActive instead.
+ *
  * Determines if a navigation link is active based on the current path.
  *
  * @param  href - The target URL.
  * @param  path - The current browser path.
- * @returns  - True if the navigation is active, false otherwise.
+ * @returns - True if the navigation is active, false otherwise.
  */
-
-export function isNavActive(href: string, path: string) {
-  const localeRegex = /^\/([a-z]{2})\/?/;
-  const cleanedHref = href.replace(localeRegex, '/');
-  const cleanedPath = path.replace(localeRegex, '/');
-
-  const regex = new RegExp(`^/?${cleanedHref}(/|$)`);
-  return regex.test(cleanedPath);
+export function isNavActive(href: string, path: string): boolean {
+  console.warn('isNavActive is deprecated. Use isLinkActive instead.');
+  const regex = new RegExp(`^/?${href}(/|$)`);
+  return regex.test(path);
 }
 
 /**
