@@ -128,9 +128,77 @@ export const copyToClipboard = (value: string, onSuccess = () => { }) => {
 export function convertToNormalCase(inputString: string) {
   const splittedString = inputString.split('.').pop();
   const string = splittedString || inputString;
-  const words = string.replace(/([a-z])([A-Z])/g, '$1 $2').split(/[-_|\s]+/);
+  const words = string.replace(/([a-z])([A-Z])/g, '$1 $2').split(/[-_|​\s]+/);
   const capitalizedWords = words.map(
     (word) => word.charAt(0).toUpperCase() + word.slice(1)
   );
   return capitalizedWords.join(' ');
+}
+
+/**
+ * Checks if the code is running in a server-side environment.
+ *
+ * @returns - True if the code is executed in SSR (Server-Side Rendering) context, false otherwise
+ */
+export const isSSR = typeof window === 'undefined';
+
+/**
+ * Converts an SVG string to a Base64-encoded string.
+ *
+ * @param str - The SVG string to encode
+ * @returns - Base64-encoded string representation of the SVG
+ */
+export const svgToBase64 = (str: string) =>
+  isSSR ? Buffer.from(str).toString('base64') : window.btoa(str);
+
+/**
+ * Pauses execution for the specified time.
+ *
+ * @param time - Time in milliseconds to sleep (default is 1000ms)
+ * @returns - A Promise that resolves after the specified time
+ */
+export const sleep = (time = 1000) =>
+  new Promise((resolve) => setTimeout(resolve, time));
+
+/**
+ * Creates a debounced function that delays invoking the provided function until
+ * after the specified wait time has elapsed since the last invocation.
+ *
+ * @param func - The function to debounce
+ * @param wait - The number of milliseconds to delay (default is 1000ms)
+ * @returns - A debounced version of the function
+ */
+export function debounce<T extends (...args: any[]) => void>(
+  func: T,
+  wait = 1000
+): (...args: Parameters<T>) => void {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  return function (this: ThisParameterType<T>, ...args: Parameters<T>): void {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+}
+
+/**
+ * Creates a throttled function that invokes the provided function at most once
+ * every specified wait time.
+ *
+ * @param func - The function to throttle
+ * @param wait - The number of milliseconds to wait (default is 1000ms)
+ * @returns - A throttled version of the function
+ */
+export function throttle<T extends (...args: any[]) => void>(
+  func: T,
+  wait = 1000
+): (...args: Parameters<T>) => void {
+  let inThrottle = false;
+  return function (this: ThisParameterType<T>, ...args: Parameters<T>): void {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => {
+        inThrottle = false;
+      }, wait);
+    }
+  };
 }
