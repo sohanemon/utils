@@ -118,3 +118,19 @@ export const copyToClipboard = (value: string, onSuccess = () => { }) => {
 
   navigator.clipboard.writeText(value).then(onSuccess);
 };
+
+/**
+ * Converts camelCase, PascalCase, kebab-case, snake_case into normal case.
+ *
+ * @param  inputString - The string need to be converted into normal case
+ * @returns - Normal Case
+ */
+export function convertToNormalCase(inputString: string) {
+  const splittedString = inputString.split('.').pop();
+  const string = splittedString || inputString;
+  const words = string.replace(/([a-z])([A-Z])/g, '$1 $2').split(/[-_|\s]+/);
+  const capitalizedWords = words.map(
+    (word) => word.charAt(0).toUpperCase() + word.slice(1)
+  );
+  return capitalizedWords.join(' ');
+}
