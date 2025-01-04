@@ -160,45 +160,200 @@ export const svgToBase64 = (str: string) =>
 export const sleep = (time = 1000) =>
   new Promise((resolve) => setTimeout(resolve, time));
 
+type DebouncedFunction<F extends (...args: any[]) => any> = {
+  (...args: Parameters<F>): ReturnType<F> | undefined;
+  readonly isPending: boolean;
+};
+
 /**
  * Creates a debounced function that delays invoking the provided function until
- * after the specified wait time has elapsed since the last invocation.
+ * after the specified `wait` time has elapsed since the last invocation.
  *
- * @param func - The function to debounce
- * @param wait - The number of milliseconds to delay (default is 1000ms)
- * @returns - A debounced version of the function
+ * If the `immediate` option is set to `true`, the function will be invoked immediately
+ * on the leading edge of the wait interval. Subsequent calls during the wait interval
+ * will reset the timer but not invoke the function until the interval elapses again.
+ *
+ * The returned function includes the `isPending` property to check if the debounce
+ * timer is currently active.
+ *
+ * @typeParam F - The type of the function to debounce.
+ *
+ * @param function_ - The function to debounce.
+ * @param wait - The number of milliseconds to delay (default is 100ms).
+ * @param options - An optional object with the following properties:
+ *   - `immediate` (boolean): If `true`, invokes the function on the leading edge
+ *     of the wait interval instead of the trailing edge.
+ *
+ * @returns A debounced version of the provided function, enhanced with the `isPending` property.
+ *
+ * @throws {TypeError} If the first parameter is not a function.
+ * @throws {RangeError} If the `wait` parameter is negative.
+ *
+ * @example
+ * const log = debounce((message: string) => console.log(message), 200);
+ * log('Hello'); // Logs "Hello" after 200ms if no other call is made.
+ * console.log(log.isPending); // true if the timer is active.
  */
-export function debounce<T extends (...args: any[]) => void>(
-  func: T,
-  wait = 1000
-): (...args: Parameters<T>) => void {
-  let timeout: ReturnType<typeof setTimeout> | undefined;
-  return function (this: ThisParameterType<T>, ...args: Parameters<T>): void {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(this, args), wait);
-  };
+export function debounce<F extends (...args: any[]) => any>(
+  function_: F,
+  wait = 100,
+  options?: { immediate: boolean }
+): DebouncedFunction<F> {
+  if (typeof function_ !== 'function') {
+    throw new TypeError(
+      `Expected the first parameter to be a function, got \`${typeof function_}\`.`
+    );
+  }
+
+  if (wait < 0) {
+    throw new RangeError('`wait` must not be negative.');
+  }
+
+  const immediate = options?.immediate ?? false;
+
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  let lastArgs: Parameters<F> | undefined;
+  let lastContext: ThisParameterType<F> | undefined;
+  let result: ReturnType<F> | undefined;
+
+  function run(this: ThisParameterType<F>): ReturnType<F> | undefined {
+    result = function_.apply(lastContext, lastArgs!);
+    lastArgs = undefined;
+    lastContext = undefined;
+    return result;
+  }
+
+  const debounced = function (
+    this: ThisParameterType<F>,
+    ...args: Parameters<F>
+  ): ReturnType<F> | undefined {
+    lastArgs = args;
+    lastContext = this;
+
+    if (timeoutId === undefined && immediate) {
+      result = run.call(this);
+    }
+
+    if (timeoutId !== undefined) {
+      clearTimeout(timeoutId);
+    }
+
+    timeoutId = setTimeout(run.bind(this), wait);
+    return result;
+  } as DebouncedFunction<F>;
+
+  Object.defineProperty(debounced, 'isPending', {
+    get() {
+      return timeoutId !== undefined;
+    },
+  });
+
+  return debounced;
 }
+
+type ThrottledFunction<F extends (...args: any[]) => any> = {
+  (...args: Parameters<F>): ReturnType<F> | undefined;
+  readonly isPending: boolean;
+};
 
 /**
  * Creates a throttled function that invokes the provided function at most once
- * every specified wait time.
+ * every `wait` milliseconds.
  *
- * @param func - The function to throttle
- * @param wait - The number of milliseconds to wait (default is 1000ms)
- * @returns - A throttled version of the function
+ * If the `leading` option is set to `true`, the function will be invoked immediately
+ * on the leading edge of the throttle interval. If the `trailing` option is set to `true`,
+ * the function will also be invoked at the end of the throttle interval if additional
+ * calls were made during the interval.
+ *
+ * The returned function includes the `isPending` property to check if the throttle
+ * timer is currently active.
+ *
+ * @typeParam F - The type of the function to throttle.
+ *
+ * @param function_ - The function to throttle.
+ * @param wait - The number of milliseconds to wait between invocations (default is 100ms).
+ * @param options - An optional object with the following properties:
+ *   - `leading` (boolean): If `true`, invokes the function on the leading edge of the interval.
+ *   - `trailing` (boolean): If `true`, invokes the function on the trailing edge of the interval.
+ *
+ * @returns A throttled version of the provided function, enhanced with the `isPending` property.
+ *
+ * @throws {TypeError} If the first parameter is not a function.
+ * @throws {RangeError} If the `wait` parameter is negative.
+ *
+ * @example
+ * const log = throttle((message: string) => console.log(message), 200);
+ * log('Hello'); // Logs "Hello" immediately if leading is true.
+ * console.log(log.isPending); // true if the timer is active.
  */
-export function throttle<T extends (...args: any[]) => void>(
-  func: T,
-  wait = 1000
-): (...args: Parameters<T>) => void {
-  let inThrottle = false;
-  return function (this: ThisParameterType<T>, ...args: Parameters<T>): void {
-    if (!inThrottle) {
-      func.apply(this, args);
-      inThrottle = true;
-      setTimeout(() => {
-        inThrottle = false;
-      }, wait);
+export function throttle<F extends (...args: any[]) => any>(
+  function_: F,
+  wait = 100,
+  options?: { leading?: boolean; trailing?: boolean }
+): ThrottledFunction<F> {
+  if (typeof function_ !== 'function') {
+    throw new TypeError(
+      `Expected the first parameter to be a function, got \`${typeof function_}\`.`
+    );
+  }
+
+  if (wait < 0) {
+    throw new RangeError('`wait` must not be negative.');
+  }
+
+  const leading = options?.leading ?? true;
+  const trailing = options?.trailing ?? true;
+
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  let lastArgs: Parameters<F> | undefined;
+  let lastContext: ThisParameterType<F> | undefined;
+  let lastCallTime: number | undefined;
+  let result: ReturnType<F> | undefined;
+
+  function invoke() {
+    lastCallTime = Date.now();
+    result = function_.apply(lastContext, lastArgs!);
+    lastArgs = undefined;
+    lastContext = undefined;
+  }
+
+  function later() {
+    timeoutId = undefined;
+    if (trailing && lastArgs) {
+      invoke();
     }
-  };
+  }
+
+  const throttled = function (
+    this: ThisParameterType<F>,
+    ...args: Parameters<F>
+  ): ReturnType<F> | undefined {
+    const now = Date.now();
+    const timeSinceLastCall = lastCallTime
+      ? now - lastCallTime
+      : Number.POSITIVE_INFINITY;
+
+    lastArgs = args;
+    lastContext = this;
+
+    if (timeSinceLastCall >= wait) {
+      if (leading) {
+        invoke();
+      } else {
+        timeoutId = setTimeout(later, wait);
+      }
+    } else if (!timeoutId && trailing) {
+      timeoutId = setTimeout(later, wait - timeSinceLastCall);
+    }
+
+    return result;
+  } as ThrottledFunction<F>;
+
+  Object.defineProperty(throttled, 'isPending', {
+    get() {
+      return timeoutId !== undefined;
+    },
+  });
+
+  return throttled;
 }

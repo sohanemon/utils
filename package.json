@@ -1,6 +1,6 @@
 {
   "name": "@sohanemon/utils",
-  "version": "4.0.33",
+  "version": "4.1.0",
   "author": "Sohan Emon <sohanemon@outlook.com>",
   "description": "",
   "type": "module",
@@ -15,19 +15,33 @@
   },
   "typesVersions": {
     "*": {
-      "core": ["dist/index.d.ts"],
-      "types": ["dist/types/index.d.ts"],
-      "hooks": ["dist/hooks/index.d.ts"],
-      "components": ["dist/components/index.d.ts"]
+      "core": [
+        "dist/index.d.ts"
+      ],
+      "types": [
+        "dist/types/index.d.ts"
+      ],
+      "hooks": [
+        "dist/hooks/index.d.ts"
+      ],
+      "components": [
+        "dist/components/index.d.ts"
+      ]
     }
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
     "export": "tsc && npm publish"
   },
-  "keywords": ["utils", "cn"],
+  "keywords": [
+    "utils",
+    "cn"
+  ],
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^22.4.0",
