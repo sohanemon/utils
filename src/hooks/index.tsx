@@ -336,13 +336,15 @@ export function useCopyToClipboard({ timeout = 2000 }: { timeout?: number }) {
 /**
  * Properties for height calculation.
  */
-type CalculationProps = {
+type CalculationProps2 = {
   blockIds: string[];
   dynamic?: boolean | string;
   margin?: number;
+  substract?: boolean;
 };
 
 /**
+ *
  * Hook to calculate the height of an element based on viewport and other block heights.
  * @param params - Configuration object for height calculation.
  * @returns The calculated height.
@@ -350,8 +352,9 @@ type CalculationProps = {
 export const useHeightCalculation = ({
   blockIds = [],
   margin = 0,
+  substract = true,
   dynamic = false,
-}: CalculationProps): number => {
+}: CalculationProps2): number => {
   const [height, setTableHeight] = React.useState<number>(500);
 
   const handleResize = () => {
@@ -360,7 +363,10 @@ export const useHeightCalculation = ({
         prevHeight + (document.getElementById(id)?.clientHeight || 0),
       0
     );
-    setTableHeight(window.innerHeight - blockHeight - margin);
+    const height = substract
+      ? window.innerHeight - blockHeight - margin
+      : blockHeight + margin;
+    setTableHeight(height);
   };
 
   useIsomorphicEffect(() => {
@@ -382,4 +388,92 @@ export const useHeightCalculation = ({
   }, []);
 
   return height;
+};
+
+/**
+ * Properties for DOM calculation.
+ */
+type CalculationProps = {
+  blockIds: string[];
+  dynamic?: boolean | string;
+  margin?: number;
+  substract?: boolean;
+  onChange?: (results: {
+    blocksHeight: number;
+    blocksWidth: number;
+    remainingWidth: number;
+    remainingHeight: number;
+  }) => void;
+};
+
+/**
+ * Hook to calculate dimensions (height and width) of an element based on viewport and other block dimensions.
+ * @param params - Configuration object for dimension calculation.
+ * @returns An object containing the calculated height and width.
+ */
+export const useDomCalculation = ({
+  blockIds = [],
+  margin = 0,
+  substract = true,
+  dynamic = false,
+  onChange,
+}: CalculationProps): { height: number; width: number } => {
+  const [dimensions, setDimensions] = React.useState<{
+    height: number;
+    width: number;
+  }>({
+    height: 500,
+    width: 500,
+  });
+
+  const handleCalculation = () => {
+    const blocksHeight = blockIds.reduce(
+      (prevHeight, id) =>
+        prevHeight + (document.getElementById(id)?.clientHeight || 0),
+      0
+    );
+
+    const blocksWidth = blockIds.reduce(
+      (prevWidth, id) =>
+        prevWidth + (document.getElementById(id)?.clientWidth || 0),
+      0
+    );
+
+    const height = substract
+      ? window.innerHeight - blocksHeight - margin
+      : blocksHeight + margin;
+
+    const width = substract
+      ? window.innerWidth - blocksWidth - margin
+      : blocksWidth + margin;
+
+    const newDimensions = { height, width };
+    setDimensions(newDimensions);
+
+    onChange?.({
+      blocksWidth,
+      blocksHeight,
+      remainingWidth: width,
+      remainingHeight: height,
+    });
+  };
+
+  useIsomorphicEffect(() => {
+    handleCalculation();
+
+    if (!dynamic) return;
+
+    if (typeof dynamic === 'string') {
+      const resizableElement = document.getElementById(dynamic);
+      const resizeObserver = new ResizeObserver(() => handleCalculation());
+
+      if (resizableElement) resizeObserver.observe(resizableElement);
+      return () => resizeObserver.disconnect();
+    }
+
+    window.addEventListener('resize', handleCalculation);
+    return () => window.removeEventListener('resize', handleCalculation);
+  }, []);
+
+  return dimensions;
 };
