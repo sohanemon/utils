@@ -136,6 +136,49 @@ export function convertToNormalCase(inputString: string) {
   return capitalizedWords.join(' ');
 }
 
+const from = 'àáãäâèéëêìíïîòóöôùúüûñç·/_,:;';
+const to = 'aaaaaeeeeiiiioooouuuunc------';
+
+/**
+ * Converts a string to a URL-friendly slug by trimming, converting to lowercase,
+ * replacing diacritics, removing invalid characters, and replacing spaces with hyphens.
+ * @param {string} [str] - The input string to convert.
+ * @returns {string} The generated slug.
+ * @example
+ * convertToSlug("Hello World!"); // "hello-world"
+ * convertToSlug("Déjà Vu"); // "deja-vu"
+ */
+export const convertToSlug = (str: string): string => {
+  if (typeof str !== 'string') {
+    throw new TypeError('Input must be a string');
+  }
+
+  // Trim the string and convert it to lowercase.
+  let slug = str.trim().toLowerCase();
+
+  // Build a mapping of accented characters to their non-accented equivalents.
+  const charMap: Record<string, string> = {};
+  for (let i = 0; i < from.length; i++) {
+    charMap[from.charAt(i)] = to.charAt(i);
+  }
+
+  // Replace all accented characters using the mapping.
+  slug = slug.replace(
+    new RegExp(`[${from}]`, 'g'),
+    (match) => charMap[match] || match
+  );
+
+  return (
+    slug
+      .replace(/[^a-z0-9 -]/g, '') // Remove invalid characters
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Collapse consecutive hyphens
+      .replace(/^-+/, '') // Remove leading hyphens
+      .replace(/-+$/, '') || // Remove trailing hyphens
+    ''
+  );
+};
+
 /**
  * Checks if the code is running in a server-side environment.
  *
