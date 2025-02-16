@@ -426,7 +426,7 @@ export const useDomCalculation = ({
     width: 500,
   });
 
-  const handleCalculation = () => {
+  const handleCalculation = React.useCallback(() => {
     const blocksHeight = blockIds.reduce(
       (prevHeight, id) =>
         prevHeight + (document.getElementById(id)?.clientHeight || 0),
@@ -447,8 +447,13 @@ export const useDomCalculation = ({
       ? window.innerWidth - blocksWidth - margin
       : blocksWidth + margin;
 
-    const newDimensions = { height, width };
-    setDimensions(newDimensions);
+    setDimensions((prev) => {
+      // Only update state if dimensions have actually changed
+      if (prev.height === height && prev.width === width) {
+        return prev;
+      }
+      return { height, width };
+    });
 
     onChange?.({
       blocksWidth,
@@ -456,24 +461,77 @@ export const useDomCalculation = ({
       remainingWidth: width,
       remainingHeight: height,
     });
-  };
+  }, [blockIds, margin, substract, onChange]);
 
   useIsomorphicEffect(() => {
     handleCalculation();
 
-    if (!dynamic) return;
+    const cleanups: Array<() => void> = [];
 
-    if (typeof dynamic === 'string') {
-      const resizableElement = document.getElementById(dynamic);
-      const resizeObserver = new ResizeObserver(() => handleCalculation());
+    if (blockIds.length > 0) {
+      const observer = new MutationObserver((mutations) => {
+        let shouldRecalculate = false;
+        for (const mutation of mutations) {
+          for (const node of mutation.addedNodes) {
+            if (node instanceof Element) {
+              if (
+                blockIds.includes(node.id) ||
+                blockIds.some((id) => node.querySelector(`#${CSS.escape(id)}`))
+              ) {
+                shouldRecalculate = true;
+                break;
+              }
+            }
+          }
+          if (shouldRecalculate) break;
+          for (const node of mutation.removedNodes) {
+            if (node instanceof Element) {
+              if (
+                blockIds.includes(node.id) ||
+                blockIds.some((id) => node.querySelector(`#${CSS.escape(id)}`))
+              ) {
+                shouldRecalculate = true;
+                break;
+              }
+            }
+          }
+          if (shouldRecalculate) break;
+        }
+        if (shouldRecalculate) {
+          handleCalculation();
+        }
+      });
 
-      if (resizableElement) resizeObserver.observe(resizableElement);
-      return () => resizeObserver.disconnect();
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+      });
+      cleanups.push(() => observer.disconnect());
     }
 
-    window.addEventListener('resize', handleCalculation);
-    return () => window.removeEventListener('resize', handleCalculation);
-  }, []);
+    if (dynamic) {
+      if (typeof dynamic === 'string') {
+        const resizableElement = document.getElementById(dynamic);
+        if (resizableElement) {
+          const resizeObserver = new ResizeObserver(handleCalculation);
+          resizeObserver.observe(resizableElement);
+          cleanups.push(() => resizeObserver.unobserve(resizableElement));
+          cleanups.push(() => resizeObserver.disconnect());
+        }
+      } else {
+        window.addEventListener('resize', handleCalculation);
+        cleanups.push(() =>
+          window.removeEventListener('resize', handleCalculation)
+        );
+      }
+    }
+
+    return () => {
+      for (const cleanup of cleanups) {
+        cleanup();
+      }
+    };
+  }, [handleCalculation, dynamic, blockIds.join(',')]);
 
   return dimensions;
 };
