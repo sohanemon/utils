@@ -401,3 +401,38 @@ export function throttle<F extends (...args: any[]) => any>(
 
   return throttled;
 }
+
+/**
+ * Formats a string by replacing each '%s' placeholder with the corresponding argument.
+ * This function mimics the basic behavior of C's printf for %s substitution.
+ *
+ * It supports both calls like `printf(format, ...args)` and `printf(format, argsArray)`.
+ *
+ * @param format - The format string containing '%s' placeholders.
+ * @param args - The values to substitute into the placeholders, either as separate arguments or as a single array.
+ * @returns The formatted string with all '%s' replaced by the provided arguments.
+ *
+ * @example
+ * ```ts
+ * const message = printf("%s love %s", "I", "Bangladesh");
+ * // message === "I love Bangladesh"
+ *
+ * const arr = ["I", "Bangladesh"];
+ * const message2 = printf("%s love %s", arr);
+ * // message2 === "I love Bangladesh"
+ *
+ * // If there are too few arguments:
+ * const incomplete = printf("Bangladesh is %s %s", "beautiful");
+ * // incomplete === "Bangladesh is beautiful"
+ * ```
+ */
+export function printf(format: string, ...args: unknown[]): string {
+  const replacements: unknown[] =
+    args.length === 1 && Array.isArray(args[0]) ? (args[0] as unknown[]) : args;
+
+  let idx = 0;
+  return format.replace(/%s/g, () => {
+    const arg = replacements[idx++];
+    return arg === undefined ? '' : String(arg);
+  });
+}
