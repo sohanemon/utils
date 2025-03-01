@@ -181,6 +181,44 @@ export function useWindowEvent<K extends keyof WindowEventMap>(
 }
 
 /**
+ * Tuple type for session storage value and updater.
+ */
+type SessionStorageValue<T> = [T, React.Dispatch<React.SetStateAction<T>>];
+
+/**
+ * Hook to persist state in session storage.
+ * @param key - The key for session storage.
+ * @param defaultValue - The default value if no value is found in session storage.
+ * @returns A tuple of the stored value and an updater function.
+ */
+export const useSessionStorage = <T extends Record<string, any>>(
+  key: string,
+  defaultValue: T
+): SessionStorageValue<T> => {
+  const [storedValue, setStoredValue] = React.useState<T>(defaultValue);
+
+  React.useEffect(() => {
+    const value = sessionStorage.getItem(key);
+    if (value) {
+      setStoredValue(JSON.parse(value));
+    }
+  }, [key]);
+
+  const updateStoredValue = (valueOrFn: React.SetStateAction<T>) => {
+    let newValue: T;
+    if (typeof valueOrFn === 'function') {
+      newValue = (valueOrFn as (prevState: T) => T)(storedValue);
+    } else {
+      newValue = valueOrFn;
+    }
+    sessionStorage.setItem(key, JSON.stringify(newValue));
+    setStoredValue(newValue);
+  };
+
+  return [storedValue, updateStoredValue];
+};
+
+/**
  * Tuple type for local storage value and updater.
  */
 type LocalStorageValue<T> = [T, React.Dispatch<React.SetStateAction<T>>];
