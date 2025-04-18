@@ -45,10 +45,12 @@ export function isLinkActive({
   path,
   currentPath,
   locales = ['en', 'es', 'de', 'zh', 'bn', 'fr', 'it', 'nl'],
+  exact = true,
 }: {
   path: string;
   currentPath: string;
   locales?: string[];
+  exact?: boolean;
 }): boolean {
   const localeRegex = new RegExp(`^/?(${locales.join('|')})/`);
   const normalizePath = (p: string): string => {
@@ -60,7 +62,9 @@ export function isLinkActive({
   const normalizedPath = normalizePath(path);
   const normalizedCurrentPath = normalizePath(currentPath);
 
-  return normalizedPath === normalizedCurrentPath;
+  return exact
+    ? normalizedPath === normalizedCurrentPath
+    : normalizedCurrentPath.startsWith(normalizedPath);
 }
 
 /**
