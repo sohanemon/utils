@@ -63,3 +63,14 @@ export type Merge<
 export type Substract<T extends object, U extends object> = Omit<T, keyof U>;
 
 export type AllOrNone<T> = T | { [P in keyof T]?: never };
+
+export type OneOf<T> = {
+  [K in keyof T]: Pick<T, K>;
+}[keyof T];
+
+export type TwoOf<T> = {
+  [K in keyof T]: { [L in Exclude<keyof T, K>]: Pick<T, K | L> }[Exclude<
+    keyof T,
+    K
+  >];
+}[keyof T];
