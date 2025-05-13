@@ -74,8 +74,12 @@ export function isLinkActive({
  * @returns - The cleaned path.
  */
 export function cleanSrc(src: string) {
-  if (src.includes('/public/')) return src.replace('/public/', '/');
-  return src;
+  let cleanedSrc = src;
+  if (src.includes('/public/')) {
+    cleanedSrc = src.replace('/public/', '/');
+  }
+
+  return cleanedSrc.trim();
 }
 
 /**
@@ -440,3 +444,29 @@ export function printf(format: string, ...args: unknown[]): string {
     return arg === undefined ? '' : String(arg);
   });
 }
+
+/**
+ * Merges multiple refs into a single ref callback.
+ *
+ * @param refs - An array of refs to merge.
+ *
+ * @returns - A function that updates the merged ref with the provided value.
+ */
+
+export type MergeRefs = <T>(
+  ...refs: Array<React.Ref<T> | undefined>
+) => React.RefCallback<T>;
+
+export const mergeRefs: MergeRefs = <T>(...refs: any[]) => {
+  return (value: T) => {
+    for (const ref of refs) {
+      if (!ref) continue;
+
+      if (typeof ref === 'function') {
+        ref(value);
+      } else {
+        (ref as React.RefObject<T | null>).current = value;
+      }
+    }
+  };
+};

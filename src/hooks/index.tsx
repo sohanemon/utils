@@ -573,3 +573,81 @@ export const useDomCalculation = ({
 
   return dimensions;
 };
+
+/**
+ * Hook to detect if the user is scrolling.
+ * @returns An object containing the isScrolling state and a ref to the scrollable container.
+ */
+
+export const useIsScrolling = () => {
+  const [isScrolling, setIsScrolling] = React.useState(false);
+  const scrollTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const scrollableContainerRef = React.useRef<HTMLElement>(null);
+
+  useEffectOnce(() => {
+    const mainElement = scrollableContainerRef.current;
+
+    if (!mainElement) return;
+
+    const handleScroll = () => {
+      setIsScrolling(true);
+
+      if (scrollTimerRef.current) {
+        clearTimeout(scrollTimerRef.current);
+      }
+
+      // Set a timeout to mark scrolling as finished after delay
+      scrollTimerRef.current = setTimeout(() => {
+        setIsScrolling(false);
+      }, 150);
+    };
+
+    handleScroll();
+
+    mainElement.addEventListener('scroll', handleScroll);
+
+    return () => {
+      mainElement.removeEventListener('scroll', handleScroll);
+      if (scrollTimerRef.current) {
+        clearTimeout(scrollTimerRef.current);
+      }
+    };
+  });
+
+  return {
+    isScrolling,
+    scrollableContainerRef,
+  };
+};
+
+/**
+ * Hook to detect if the user is at the top of the page.
+ * @returns An object containing the isAtTop state and a ref to the scrollable container.
+ */
+
+export const useIsAtTop = ({ offset }: { offset?: number } = {}) => {
+  const [isAtTop, setIsAtTop] = React.useState(true);
+
+  const scrollableContainerRef = React.useRef<HTMLElement>(null);
+
+  useEffectOnce(() => {
+    const mainElement = scrollableContainerRef.current;
+
+    if (!mainElement) return;
+
+    const handleScroll = () => {
+      const scrolled = mainElement.scrollTop > (offset ?? 10);
+      setIsAtTop(!scrolled);
+    };
+
+    handleScroll();
+
+    mainElement.addEventListener('scroll', handleScroll);
+
+    return () => {
+      mainElement.removeEventListener('scroll', handleScroll);
+    };
+  });
+
+  return { scrollableContainerRef, isAtTop };
+};
