@@ -74,3 +74,7 @@ export type TwoOf<T> = {
     K
   >];
 }[keyof T];
+
+export type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};
