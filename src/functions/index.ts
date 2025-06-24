@@ -116,7 +116,7 @@ export const scrollTo = (
  * @param  value - The value to copy to the clipboard.
  * @param  [onSuccess=() => {}] - Optional callback executed after successful copy.
  */
-export const copyToClipboard = (value: string, onSuccess = () => { }) => {
+export const copyToClipboard = (value: string, onSuccess = () => {}) => {
   if (typeof window === 'undefined' || !navigator.clipboard?.writeText) {
     return;
   }
@@ -137,7 +137,7 @@ export const copyToClipboard = (value: string, onSuccess = () => { }) => {
 export function convertToNormalCase(inputString: string) {
   const splittedString = inputString.split('.').pop();
   const string = splittedString || inputString;
-  const words = string.replace(/([a-z])([A-Z])/g, '$1 $2').split(/[-_|​\s]+/);
+  const words = string.replace(/([a-z])([A-Z])/g, '$1 $2').split(/[-_|�\s]+/);
   const capitalizedWords = words.map(
     (word) => word.charAt(0).toUpperCase() + word.slice(1)
   );
@@ -470,3 +470,20 @@ export const mergeRefs: MergeRefs = <T>(...refs: any[]) => {
     }
   };
 };
+
+/**
+ * Navigates to the specified client-side hash without ssr.
+ * use `scroll-margin-top` with css to add margins
+ *
+ * @param id - The ID of the element without # to navigate to.
+ *
+ * @example goToClientSideHash('my-element');
+ */
+
+export function goToClientSideHash(id: string, opts?: ScrollIntoViewOptions) {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  el.scrollIntoView({ behavior: 'smooth', block: 'start', ...opts });
+  window.history.pushState(null, '', `#${id}`);
+}

@@ -1,6 +1,6 @@
 {
   "name": "@sohanemon/utils",
-  "version": "4.1.14",
+  "version": "5.0.0",
   "author": "Sohan Emon <sohanemon@outlook.com>",
   "description": "",
   "type": "module",
@@ -15,44 +15,31 @@
   },
   "typesVersions": {
     "*": {
-      "core": [
-        "dist/index.d.ts"
-      ],
-      "types": [
-        "dist/types/index.d.ts"
-      ],
-      "hooks": [
-        "dist/hooks/index.d.ts"
-      ],
-      "components": [
-        "dist/components/index.d.ts"
-      ]
+      "core": ["dist/index.d.ts"],
+      "types": ["dist/types/index.d.ts"],
+      "hooks": ["dist/hooks/index.d.ts"],
+      "components": ["dist/components/index.d.ts"]
     }
   },
-  "files": [
-    "dist",
-    "README.md"
-  ],
+  "files": ["dist", "README.md"],
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
     "export": "tsc && npm publish"
   },
-  "keywords": [
-    "utils",
-    "cn"
-  ],
+  "keywords": ["utils", "cn"],
   "license": "ISC",
   "devDependencies": {
-    "@types/node": "^22.4.0",
-    "@types/react": "^19.1.4",
-    "typescript": "^5.5.4"
+    "@types/node": "^24.0.3",
+    "@types/react": "^19.1.8",
+    "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@fluid-tailwind/tailwind-merge": "^0.0.2",
-    "@iconify/react": "^4.1.1",
+    "@fluid-tailwind/tailwind-merge": "^0.0.3",
+    "@iconify/react": "^6.0.0",
     "clsx": "^2.1.1",
     "react": "^19.1.0",
-    "tailwind-merge": "^1.14.0"
-  }
+    "tailwind-merge": "^3.3.1"
+  },
+  "packageManager": "pnpm@10.11.0+sha512.6540583f41cc5f628eb3d9773ecee802f4f9ef9923cc45b69890fb47991d4b092964694ec3a4f738a420c918a333062c8b925d312f42e4f0c263eb603551f977"
 }
