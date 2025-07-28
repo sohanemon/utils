@@ -4,10 +4,10 @@ export type Values<T extends object> = T[keyof T];
 export type DeepPartial<T> = T extends Function
   ? T
   : T extends Array<infer U>
-  ? Array<DeepPartial<U>>
-  : T extends object
-  ? { [K in keyof T]?: DeepPartial<T[K]> }
-  : T;
+    ? Array<DeepPartial<U>>
+    : T extends object
+      ? { [K in keyof T]?: DeepPartial<T[K]> }
+      : T;
 
 export type SelectivePartial<T, K extends keyof T> = Omit<T, K> &
   Partial<Pick<T, K>>;
@@ -15,10 +15,10 @@ export type SelectivePartial<T, K extends keyof T> = Omit<T, K> &
 export type DeepRequired<T> = T extends Function
   ? T
   : T extends Array<infer U>
-  ? Array<DeepRequired<U>>
-  : T extends object
-  ? { [K in keyof T]-?: DeepRequired<T[K]> }
-  : T;
+    ? Array<DeepRequired<U>>
+    : T extends object
+      ? { [K in keyof T]-?: DeepRequired<T[K]> }
+      : T;
 
 export type Never<T> = {
   [K in keyof T]: never;
@@ -27,10 +27,10 @@ export type Never<T> = {
 export type DeepReadonly<T> = T extends Function
   ? T
   : T extends Array<infer U>
-  ? ReadonlyArray<DeepReadonly<U>>
-  : T extends object
-  ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
-  : T;
+    ? ReadonlyArray<DeepReadonly<U>>
+    : T extends object
+      ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
+      : T;
 
 export type Mutable<T> = {
   -readonly [P in keyof T]: T[P];
@@ -78,3 +78,16 @@ export type TwoOf<T> = {
 export type Prettify<T> = {
   [K in keyof T]: T[K];
 } & {};
+
+export type NestedKeyOf<
+  ObjectType extends object,
+  IgnoreKeys extends string = never,
+> = {
+  [Key in keyof ObjectType & string]: Key extends IgnoreKeys
+    ? never
+    : ObjectType[Key] extends object
+      ? ObjectType[Key] extends Array<any>
+        ? Key
+        : `${Key}` | `${Key}.${NestedKeyOf<ObjectType[Key], IgnoreKeys>}`
+      : `${Key}`;
+}[keyof ObjectType & string];

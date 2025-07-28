@@ -1,6 +1,6 @@
 {
   "name": "@sohanemon/utils",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "author": "Sohan Emon <sohanemon@outlook.com>",
   "description": "",
   "type": "module",
@@ -15,19 +15,33 @@
   },
   "typesVersions": {
     "*": {
-      "core": ["dist/index.d.ts"],
-      "types": ["dist/types/index.d.ts"],
-      "hooks": ["dist/hooks/index.d.ts"],
-      "components": ["dist/components/index.d.ts"]
+      "core": [
+        "dist/index.d.ts"
+      ],
+      "types": [
+        "dist/types/index.d.ts"
+      ],
+      "hooks": [
+        "dist/hooks/index.d.ts"
+      ],
+      "components": [
+        "dist/components/index.d.ts"
+      ]
     }
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
     "export": "tsc && npm publish"
   },
-  "keywords": ["utils", "cn"],
+  "keywords": [
+    "utils",
+    "cn"
+  ],
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^24.0.3",
@@ -35,7 +49,6 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@fluid-tailwind/tailwind-merge": "^0.0.3",
     "@iconify/react": "^6.0.0",
     "clsx": "^2.1.1",
     "react": "^19.1.0",

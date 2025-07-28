@@ -6,14 +6,12 @@
  */
 import { type ClassValue, clsx } from 'clsx';
 import type * as React from 'react';
-import { extendTailwindMerge } from 'tailwind-merge';
-import { withFluid } from '@fluid-tailwind/tailwind-merge';
+import { twMerge } from 'tailwind-merge';
 
 export * from './cookie';
 export * from './object';
 
 export function cn(...inputs: ClassValue[]) {
-  const twMerge = extendTailwindMerge(withFluid);
   return twMerge(clsx(inputs));
 }
 
