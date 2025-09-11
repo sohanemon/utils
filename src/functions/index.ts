@@ -501,3 +501,51 @@ export function escapeRegExp(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+
+/**
+ * Normalizes a string by:
+ * - Applying Unicode normalization (NFC)
+ * - Optionally removing diacritic marks (accents)
+ * - Optionally trimming leading/trailing non-alphanumeric characters
+ * - Optionally converting to lowercase
+ *
+ * @param str - The string to normalize
+ * @param options - Normalization options
+ * @param options.lowercase - Whether to convert the result to lowercase (default: true)
+ * @param options.removeAccents - Whether to remove diacritic marks like accents (default: true)
+ * @param options.removeNonAlphanumeric - Whether to trim non-alphanumeric characters from the edges (default: true)
+ * @returns The normalized string
+ */
+export function normalizeText(
+  str?: string | null,
+  options: {
+    lowercase?: boolean;
+    removeAccents?: boolean;
+    removeNonAlphanumeric?: boolean;
+  } = {}
+): string {
+  if (!str) return '';
+
+  const {
+    lowercase = true,
+    removeAccents = true,
+    removeNonAlphanumeric = true,
+  } = options;
+
+  let result = str.normalize('NFC');
+
+  if (removeAccents) {
+    result = result.replace(/\p{M}/gu, ''); // remove accents
+  }
+
+  if (removeNonAlphanumeric) {
+    result = result.replace(/^[^\p{L}\p{N}]*|[^\p{L}\p{N}]*$/gu, ''); // trim edges
+  }
+
+  if (lowercase) {
+    result = result.toLocaleLowerCase();
+  }
+
+  return result;
+}
+
