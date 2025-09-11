@@ -7,10 +7,9 @@ export type Primitive =
   | null
   | undefined;
 export type Falsy = false | '' | 0 | null | undefined;
-export type Nullish = null | undefined;
 
 export const isFalsy = (val: unknown): val is Falsy => !val;
-export const isNullish = (val: unknown): val is Nullish => val == null;
+export const isNullish = (val: unknown): val is (null | undefined)=> val == null;
 export const isPrimitive = (val: unknown): val is Primitive => {
   if (val === null || val === undefined) {
     return true;

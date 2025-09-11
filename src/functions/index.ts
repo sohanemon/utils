@@ -485,3 +485,19 @@ export function goToClientSideHash(id: string, opts?: ScrollIntoViewOptions) {
   el.scrollIntoView({ behavior: 'smooth', block: 'start', ...opts });
   window.history.pushState(null, '', `#${id}`);
 }
+
+/**
+ * Escapes a string for use in a regular expression.
+ *
+ * @param str - The string to escape
+ * @returns - The escaped string
+ *
+ * @example
+ * const escapedString = escapeRegExp('Hello, world!');
+ * // escapedString === 'Hello\\, world!'
+ */
+
+export function escapeRegExp(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
