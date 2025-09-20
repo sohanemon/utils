@@ -143,3 +143,35 @@ export function getObjectValue(
 
   return current !== undefined ? current : defaultValue;
 }
+
+/**
+ * Extend an object or function with additional properties while
+ * preserving the original type information.
+ *
+ * Works with both plain objects and callable functions since
+ * functions in JavaScript are objects too.
+ *
+ * @template T The base object or function type
+ * @template P The additional properties type
+ *
+ * @param base - The object or function to extend
+ * @param props - An object containing properties to attach
+ *
+ * @returns The same object/function, augmented with the given properties
+ *
+ * @example
+ * // Extend an object
+ * const obj = extendProps({ a: 1 }, { b: "hello" });
+ * // obj has { a: number; b: string }
+ *
+ * // Extend a function
+ * const fn = (x: number) => x * 2;
+ * const enhanced = extendProps(fn, { name: "doubler" });
+ * // enhanced is callable and also has { name: string }
+ */
+export function extendProps<T extends object, P extends object>(
+  base: T,
+  props: P,
+): T & P {
+  return Object.assign(base, props);
+}
