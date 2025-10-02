@@ -1,2 +1,2 @@
-export * from './utilities';
 export * from './guards';
+export * from './utilities';

@@ -1,4 +1,4 @@
-import { useState, useTransition, useCallback } from 'react';
+import { useCallback, useState, useTransition } from 'react';
 import { useIsomorphicEffect } from '.';
 
 interface UseAsyncOptions<T extends (...args: any) => any> {

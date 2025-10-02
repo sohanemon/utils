@@ -1,7 +1,7 @@
 'use client';
 
-import { copyToClipboard } from '../functions';
 import * as React from 'react';
+import { copyToClipboard } from '../functions';
 
 export * from './action';
 
