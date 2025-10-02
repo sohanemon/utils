@@ -2,7 +2,7 @@ export const setClientSideCookie = (
   name: string,
   value: string,
   days?: number,
-  path = '/'
+  path = '/',
 ) => {
   let expires = '';
   if (days) {

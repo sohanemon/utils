@@ -1,25 +1,28 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import { cn } from "../functions"
+import * as React from 'react';
+import { cn } from '../functions';
 
 /**
  * Props for the HtmlInjector component
  */
-type HtmlInjectorProps = Omit<React.ComponentProps<"div">, "dangerouslySetInnerHTML"> & {
+type HtmlInjectorProps = Omit<
+  React.ComponentProps<'div'>,
+  'dangerouslySetInnerHTML'
+> & {
   /** The HTML content to inject and render */
-  html: string
+  html: string;
   /**
    * Whether to sanitize the HTML content by removing potentially dangerous elements and attributes
    * @default false
    */
-  sanitize?: boolean
+  sanitize?: boolean;
   /**
    * Whether to execute script tags found in the HTML content
    * @default true
    */
-  executeScripts?: boolean
-}
+  executeScripts?: boolean;
+};
 
 /**
  * A robust component for safely injecting and rendering HTML content with optional script execution.
@@ -59,93 +62,98 @@ export function HtmlInjector({
   executeScripts = true,
   ...props
 }: HtmlInjectorProps) {
-  const injectedScriptsRef = React.useRef<HTMLScriptElement[]>([])
-  const containerRef = React.useRef<HTMLDivElement>(null)
+  const injectedScriptsRef = React.useRef<HTMLScriptElement[]>([]);
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     // NOTE: Cleanup previously injected scripts
     injectedScriptsRef.current.forEach((script) => {
       if (script.parentNode) {
-        script.parentNode.removeChild(script)
+        script.parentNode.removeChild(script);
       }
-    })
-    injectedScriptsRef.current = []
+    });
+    injectedScriptsRef.current = [];
 
-    if (!executeScripts || !html) return
+    if (!executeScripts || !html) return;
 
     try {
-      const tempContainer = document.createElement("div")
-      tempContainer.innerHTML = html
+      const tempContainer = document.createElement('div');
+      tempContainer.innerHTML = html;
 
-      const scripts = tempContainer.querySelectorAll("script")
+      const scripts = tempContainer.querySelectorAll('script');
 
       scripts.forEach((oldScript) => {
-        const newScript = document.createElement("script")
+        const newScript = document.createElement('script');
 
         // HACK: Copy text content
         if (oldScript.textContent) {
-          newScript.textContent = oldScript.textContent
+          newScript.textContent = oldScript.textContent;
         }
 
         // HACK: Copy all attributes (src, type, async, defer, etc.)
         Array.from(oldScript.attributes).forEach((attr) => {
-          newScript.setAttribute(attr.name, attr.value)
-        })
+          newScript.setAttribute(attr.name, attr.value);
+        });
 
         newScript.onerror = (error) => {
-          console.error("Script injection error:", error)
-        }
+          console.error('Script injection error:', error);
+        };
 
-        document.body.appendChild(newScript)
-        injectedScriptsRef.current.push(newScript)
-      })
+        document.body.appendChild(newScript);
+        injectedScriptsRef.current.push(newScript);
+      });
     } catch (error) {
-      console.error("HTML injection error:", error)
+      console.error('HTML injection error:', error);
     }
-  }, [html, executeScripts])
+  }, [html, executeScripts]);
 
   React.useEffect(() => {
     return () => {
       injectedScriptsRef.current.forEach((script) => {
         if (script.parentNode) {
-          script.parentNode.removeChild(script)
+          script.parentNode.removeChild(script);
         }
-      })
-    }
-  }, [])
+      });
+    };
+  }, []);
 
   const processedHtml = React.useMemo(() => {
-    if (!html) return ""
+    if (!html) return '';
 
     if (sanitize) {
       // Basic sanitization - remove potentially dangerous elements
-      const container = document.createElement("div")
-      container.innerHTML = html
+      const container = document.createElement('div');
+      container.innerHTML = html;
 
       // Remove script tags if sanitize is enabled
-      container.querySelectorAll("script").forEach((script) => script.remove())
+      container.querySelectorAll('script').forEach((script) => script.remove());
 
       // Remove potentially dangerous attributes
-      const dangerousAttrs = ["onclick", "onload", "onerror", "onmouseover"]
-      container.querySelectorAll("*").forEach((el) => {
+      const dangerousAttrs = ['onclick', 'onload', 'onerror', 'onmouseover'];
+      container.querySelectorAll('*').forEach((el) => {
         dangerousAttrs.forEach((attr) => {
           if (el.hasAttribute(attr)) {
-            el.removeAttribute(attr)
+            el.removeAttribute(attr);
           }
-        })
-      })
+        });
+      });
 
-      return container.innerHTML
+      return container.innerHTML;
     }
 
-    return html
-  }, [html, sanitize])
+    return html;
+  }, [html, sanitize]);
 
   if (!html) {
-    return null
+    return null;
   }
 
   return (
-    <div ref={containerRef} className={cn(className)} dangerouslySetInnerHTML={{ __html: processedHtml }} {...props} />
-  )
+    <div
+      ref={containerRef}
+      className={cn(className)}
+      dangerouslySetInnerHTML={{ __html: processedHtml }}
+      {...props}
+    />
+  );
 }

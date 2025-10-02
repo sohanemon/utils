@@ -16,12 +16,12 @@ type GetValue<T, K extends Array<string | number>> = K extends [
   ...infer Rest,
 ]
   ? First extends keyof T
-  ? GetValue<T[First], Rest extends Array<string | number> ? Rest : []>
-  : First extends `${number}`
-  ? T extends any[]
-  ? GetValue<T[number], Rest extends Array<string | number> ? Rest : []>
-  : undefined
-  : undefined
+    ? GetValue<T[First], Rest extends Array<string | number> ? Rest : []>
+    : First extends `${number}`
+      ? T extends any[]
+        ? GetValue<T[number], Rest extends Array<string | number> ? Rest : []>
+        : undefined
+      : undefined
   : T;
 
 /**
@@ -40,7 +40,7 @@ type GetValue<T, K extends Array<string | number>> = K extends [
 export function getObjectValue<T, K extends Array<string | number>, D>(
   obj: T,
   path: K,
-  defaultValue: D
+  defaultValue: D,
 ): Exclude<GetValue<T, K>, undefined> | D;
 
 /**
@@ -56,7 +56,7 @@ export function getObjectValue<T, K extends Array<string | number>, D>(
  */
 export function getObjectValue<T, K extends Array<string | number>>(
   obj: T,
-  path: K
+  path: K,
 ): GetValue<T, K> | undefined;
 
 /**
@@ -75,7 +75,7 @@ export function getObjectValue<T, K extends Array<string | number>>(
 export function getObjectValue<T, S extends string, D>(
   obj: T,
   path: S,
-  defaultValue: D
+  defaultValue: D,
 ): Exclude<GetValue<T, SplitPath<S>>, undefined> | D;
 
 /**
@@ -91,7 +91,7 @@ export function getObjectValue<T, S extends string, D>(
  */
 export function getObjectValue<T, S extends string>(
   obj: T,
-  path: S
+  path: S,
 ): GetValue<T, SplitPath<S>> | undefined;
 
 /**
@@ -104,7 +104,7 @@ export function getObjectValue<T, S extends string>(
 export function getObjectValue(
   obj: any,
   path: string | Array<string | number>,
-  defaultValue?: any
+  defaultValue?: any,
 ): any {
   // Validate path type and handle edge cases
   if (typeof path !== 'string' && !Array.isArray(path)) {

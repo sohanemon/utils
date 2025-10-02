@@ -14,7 +14,7 @@ interface UseAsyncOptions<T extends (...args: any) => any> {
 
 export const useAsync = <T extends (...args: any) => any>(
   fn: T,
-  opts: UseAsyncOptions<T> = {}
+  opts: UseAsyncOptions<T> = {},
 ) => {
   const { initialArgs, callback = {}, mode = 'onTrigger' } = opts;
 
@@ -47,7 +47,7 @@ export const useAsync = <T extends (...args: any) => any>(
         onSettle?.();
       }
     },
-    [fn, onExecute, onSuccess, onError, onSettle]
+    [fn, onExecute, onSuccess, onError, onSettle],
   );
 
   useIsomorphicEffect(() => {

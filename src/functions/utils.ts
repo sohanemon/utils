@@ -85,7 +85,7 @@ export function cleanSrc(src: string) {
  */
 export const scrollTo = (
   containerSelector: string | React.RefObject<HTMLDivElement>,
-  to: 'top' | 'bottom'
+  to: 'top' | 'bottom',
 ) => {
   let container: HTMLDivElement | null;
 
@@ -134,7 +134,7 @@ export function convertToNormalCase(inputString: string) {
   const string = splittedString || inputString;
   const words = string.replace(/([a-z])([A-Z])/g, '$1 $2').split(/[-_|�\s]+/);
   const capitalizedWords = words.map(
-    (word) => word.charAt(0).toUpperCase() + word.slice(1)
+    (word) => word.charAt(0).toUpperCase() + word.slice(1),
   );
   return capitalizedWords.join(' ');
 }
@@ -168,7 +168,7 @@ export const convertToSlug = (str: string): string => {
   // Replace all accented characters using the mapping.
   slug = slug.replace(
     new RegExp(`[${from}]`, 'g'),
-    (match) => charMap[match] || match
+    (match) => charMap[match] || match,
   );
 
   return (
@@ -244,11 +244,11 @@ type DebouncedFunction<F extends (...args: any[]) => any> = {
 export function debounce<F extends (...args: any[]) => any>(
   function_: F,
   wait = 100,
-  options?: { immediate: boolean }
+  options?: { immediate: boolean },
 ): DebouncedFunction<F> {
   if (typeof function_ !== 'function') {
     throw new TypeError(
-      `Expected the first parameter to be a function, got \`${typeof function_}\`.`
+      `Expected the first parameter to be a function, got \`${typeof function_}\`.`,
     );
   }
 
@@ -336,11 +336,11 @@ type ThrottledFunction<F extends (...args: any[]) => any> = {
 export function throttle<F extends (...args: any[]) => any>(
   function_: F,
   wait = 100,
-  options?: { leading?: boolean; trailing?: boolean }
+  options?: { leading?: boolean; trailing?: boolean },
 ): ThrottledFunction<F> {
   if (typeof function_ !== 'function') {
     throw new TypeError(
-      `Expected the first parameter to be a function, got \`${typeof function_}\`.`
+      `Expected the first parameter to be a function, got \`${typeof function_}\`.`,
     );
   }
 
@@ -498,7 +498,6 @@ export function escapeRegExp(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-
 /**
  * Normalizes a string by:
  * - Applying Unicode normalization (NFC)
@@ -519,7 +518,7 @@ export function normalizeText(
     lowercase?: boolean;
     removeAccents?: boolean;
     removeNonAlphanumeric?: boolean;
-  } = {}
+  } = {},
 ): string {
   if (!str) return '';
 
@@ -545,4 +544,3 @@ export function normalizeText(
 
   return result;
 }
-

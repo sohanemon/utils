@@ -11,7 +11,7 @@ export * from './action';
  * @returns A React ref object to attach to the target element.
  */
 export const useClickOutside = (
-  callback: () => void = () => alert('clicked outside')
+  callback: () => void = () => alert('clicked outside'),
 ): React.RefObject<HTMLDivElement> => {
   const ref = React.useRef<HTMLDivElement>(null);
   const listener = (e: MouseEvent | TouchEvent) => {
@@ -37,7 +37,7 @@ export const useClickOutside = (
  * @returns A boolean indicating whether the media query matches.
  */
 export function useMediaQuery(
-  tailwindBreakpoint: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | `(${string})`
+  tailwindBreakpoint: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | `(${string})`,
 ): boolean {
   const parsedQuery = React.useMemo(() => {
     switch (tailwindBreakpoint) {
@@ -64,7 +64,7 @@ export function useMediaQuery(
   };
 
   const [matches, setMatches] = React.useState<boolean>(
-    getMatches(parsedQuery)
+    getMatches(parsedQuery),
   );
 
   const handleChange = () => {
@@ -98,7 +98,7 @@ export function useEffectOnce(effect: React.EffectCallback): void {
  */
 export function useUpdateEffect(
   effect: React.EffectCallback,
-  deps: React.DependencyList
+  deps: React.DependencyList,
 ): void {
   const isInitialMount = React.useRef(true);
 
@@ -145,7 +145,7 @@ export const useIsomorphicEffect =
  */
 export function useTimeout(
   callback: () => void,
-  delay: number | null = 1000
+  delay: number | null = 1000,
 ): void {
   const savedCallback = React.useRef(callback);
   useIsomorphicEffect(() => {
@@ -172,7 +172,7 @@ export function useTimeout(
 export function useWindowEvent<K extends keyof WindowEventMap>(
   type: K,
   listener: (this: Window, ev: WindowEventMap[K]) => void,
-  options?: boolean | AddEventListenerOptions
+  options?: boolean | AddEventListenerOptions,
 ): void {
   React.useEffect(() => {
     window.addEventListener(type, listener, options);
@@ -193,7 +193,7 @@ type SessionStorageValue<T> = [T, React.Dispatch<React.SetStateAction<T>>];
  */
 export const useSessionStorage = <T extends Record<string, any>>(
   key: string,
-  defaultValue: T
+  defaultValue: T,
 ): SessionStorageValue<T> => {
   const [storedValue, setStoredValue] = React.useState<T>(defaultValue);
 
@@ -231,7 +231,7 @@ type LocalStorageValue<T> = [T, React.Dispatch<React.SetStateAction<T>>];
  */
 export const useLocalStorage = <T extends Record<string, any>>(
   key: string,
-  defaultValue: T
+  defaultValue: T,
 ): LocalStorageValue<T> => {
   const [storedValue, setStoredValue] = React.useState<T>(defaultValue);
 
@@ -264,7 +264,7 @@ export const useLocalStorage = <T extends Record<string, any>>(
  */
 export const useUrlParams = <T extends string | number | boolean>(
   key: string,
-  defaultValue: T
+  defaultValue: T,
 ): [T, (value: T) => void] => {
   const [value, setValue] = React.useState<T>(defaultValue);
 
@@ -292,7 +292,7 @@ export const useUrlParams = <T extends string | number | boolean>(
  * @returns The selected DOM element or null if not found.
  */
 export const useQuerySelector = <T extends Element>(
-  selector: string
+  selector: string,
 ): T | null => {
   const [element, setElement] = React.useState<T | null>(null);
   const elementRef = React.useRef<T | null>(null);
@@ -399,7 +399,7 @@ export const useHeightCalculation = ({
     const blockHeight = blockIds.reduce(
       (prevHeight, id) =>
         prevHeight + (document.getElementById(id)?.clientHeight || 0),
-      0
+      0,
     );
     const height = substract
       ? window.innerHeight - blockHeight - margin
@@ -468,13 +468,13 @@ export const useDomCalculation = ({
     const blocksHeight = blockIds.reduce(
       (prevHeight, id) =>
         prevHeight + (document.getElementById(id)?.clientHeight || 0),
-      0
+      0,
     );
 
     const blocksWidth = blockIds.reduce(
       (prevWidth, id) =>
         prevWidth + (document.getElementById(id)?.clientWidth || 0),
-      0
+      0,
     );
 
     const height = substract
@@ -559,7 +559,7 @@ export const useDomCalculation = ({
       } else {
         window.addEventListener('resize', handleCalculation);
         cleanups.push(() =>
-          window.removeEventListener('resize', handleCalculation)
+          window.removeEventListener('resize', handleCalculation),
         );
       }
     }

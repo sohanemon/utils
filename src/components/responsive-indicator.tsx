@@ -3,7 +3,7 @@ import * as React from 'react';
 import { isSSR } from '../functions';
 export const ResponsiveIndicator: React.FC = () => {
   const [viewportWidth, setViewportWidth] = React.useState(
-    isSSR ? 0 : window.innerWidth
+    isSSR ? 0 : window.innerWidth,
   );
   const [position, setPosition] = React.useState(0); // State to manage button position
 

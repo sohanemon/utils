@@ -24,24 +24,21 @@ export type Never<T> = {
   [K in keyof T]: never;
 };
 
-export type Nullable<T> =
-  T extends object
-    ? { [P in keyof T]: Nullable<T[P]> }
-    : T | null;
+export type Nullable<T> = T extends object
+  ? { [P in keyof T]: Nullable<T[P]> }
+  : T | null;
 
-export type Optional<T> =
-  T extends object
-    ? { [P in keyof T]: Optional<T[P]> }
-    : T | undefined;
+export type Optional<T> = T extends object
+  ? { [P in keyof T]: Optional<T[P]> }
+  : T | undefined;
 
-export type Nullish<T> =
-  T extends object
-    ? { [P in keyof T]: Nullish<T[P]> }
-    : T | null | undefined;
+export type Nullish<T> = T extends object
+  ? { [P in keyof T]: Nullish<T[P]> }
+  : T | null | undefined;
 
-export type Maybe<T> =   T extends object
-    ? { [P in keyof T]?: Nullish<T[P]> }
-    : T | null | undefined;
+export type Maybe<T> = T extends object
+  ? { [P in keyof T]?: Nullish<T[P]> }
+  : T | null | undefined;
 
 export type DeepReadonly<T> = T extends Function
   ? T
