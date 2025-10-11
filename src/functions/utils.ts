@@ -201,11 +201,36 @@ export const svgToBase64 = (str: string) =>
 /**
  * Pauses execution for the specified time.
  *
+ * `signal` allows cancelling the sleep via AbortSignal.
+ *
  * @param time - Time in milliseconds to sleep (default is 1000ms)
- * @returns - A Promise that resolves after the specified time
+ * @param signal - Optional AbortSignal to cancel the sleep early
+ * @returns - A Promise that resolves after the specified time or when aborted
  */
-export const sleep = (time = 1000) =>
-  new Promise((resolve) => setTimeout(resolve, time));
+export const sleep = (time = 1000, signal?: AbortSignal) =>
+  new Promise<void>((resolve) => {
+    if (signal?.aborted) return resolve();
+
+    const id = setTimeout(() => {
+      cleanup();
+      resolve();
+    }, time);
+
+    function onAbort() {
+      clearTimeout(id);
+      cleanup();
+      resolve();
+    }
+
+    function cleanup() {
+      signal?.removeEventListener('abort', onAbort);
+    }
+
+    // only add listener if a signal was supplied
+    if (signal) {
+      signal.addEventListener('abort', onAbort, { once: true });
+    }
+  });
 
 type DebouncedFunction<F extends (...args: any[]) => any> = {
   (...args: Parameters<F>): ReturnType<F> | undefined;

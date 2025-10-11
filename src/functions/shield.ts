@@ -1,3 +1,5 @@
+import { isSSR } from './utils';
+
 /**
  * A helper to run sync or async operations safely without try/catch.
  *
@@ -33,6 +35,7 @@ export function shield<T, E = Error>(
     const data = operation();
     return [null, data];
   } catch (error) {
+    console.log(`\x1b[31m🛡 [shield]\x1b[0m ${operation.name} failed →`, error);
     return [error as E, null];
   }
 }
