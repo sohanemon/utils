@@ -204,16 +204,19 @@ export const useSessionStorage = <T extends Record<string, any>>(
     }
   }, [key]);
 
-  const updateStoredValue = (valueOrFn: React.SetStateAction<T>) => {
-    let newValue: T;
-    if (typeof valueOrFn === 'function') {
-      newValue = (valueOrFn as (prevState: T) => T)(storedValue);
-    } else {
-      newValue = valueOrFn;
-    }
-    sessionStorage.setItem(key, JSON.stringify(newValue));
-    setStoredValue(newValue);
-  };
+  const updateStoredValue = React.useCallback(
+    (valueOrFn: React.SetStateAction<T>) => {
+      setStoredValue((prev) => {
+        const newValue =
+          typeof valueOrFn === 'function'
+            ? (valueOrFn as (prevState: T) => T)(prev)
+            : valueOrFn;
+        sessionStorage.setItem(key, JSON.stringify(newValue));
+        return newValue;
+      });
+    },
+    [key],
+  );
 
   return [storedValue, updateStoredValue];
 };
@@ -242,16 +245,19 @@ export const useLocalStorage = <T extends Record<string, any>>(
     }
   }, [key]);
 
-  const updateStoredValue = (valueOrFn: React.SetStateAction<T>) => {
-    let newValue: T;
-    if (typeof valueOrFn === 'function') {
-      newValue = (valueOrFn as (prevState: T) => T)(storedValue);
-    } else {
-      newValue = valueOrFn;
-    }
-    localStorage.setItem(key, JSON.stringify(newValue));
-    setStoredValue(newValue);
-  };
+  const updateStoredValue = React.useCallback(
+    (valueOrFn: React.SetStateAction<T>) => {
+      let newValue: T;
+      if (typeof valueOrFn === 'function') {
+        newValue = (valueOrFn as (prevState: T) => T)(storedValue);
+      } else {
+        newValue = valueOrFn;
+      }
+      localStorage.setItem(key, JSON.stringify(newValue));
+      setStoredValue(newValue);
+    },
+    [key],
+  );
 
   return [storedValue, updateStoredValue];
 };
@@ -650,4 +656,79 @@ export const useIsAtTop = ({ offset }: { offset?: number } = {}) => {
   });
 
   return { scrollableContainerRef, isAtTop };
+};
+
+interface UseIntersectionOptions extends IntersectionObserverInit {
+  onInteractionStart?: () => void;
+  onInteractionEnd?: () => void;
+}
+
+/**
+ * React hook that tracks when an element enters or leaves the viewport
+ * using the Intersection Observer API.
+ *
+ * @example
+ * ```tsx
+ * const { ref, isIntersecting } = useIntersection({
+ *   threshold: 0.1,
+ *   onInteractionStart: () => console.log('👀 Element entered viewport'),
+ *   onInteractionEnd: () => console.log('🙈 Element left viewport'),
+ * });
+ *
+ * return <div ref={ref}>Watch me</div>;
+ * ```
+ *
+ * @param options - Configuration for the intersection observer.
+ * @returns Object containing:
+ * - `ref`: React ref to attach to the observed element.
+ * - `isIntersecting`: Whether the element is currently visible.
+ */
+
+export const useIntersection = ({
+  threshold = 0.1,
+  root = null,
+  rootMargin,
+  onInteractionStart,
+  onInteractionEnd,
+}: UseIntersectionOptions = {}) => {
+  const [isIntersecting, setIsIntersecting] = React.useState(false);
+  const ref = React.useRef(null);
+
+  React.useEffect(() => {
+    if (!ref.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            if (!isIntersecting) {
+              onInteractionStart?.();
+              setIsIntersecting(true);
+            }
+          } else {
+            if (isIntersecting) {
+              onInteractionEnd?.();
+              setIsIntersecting(false);
+            }
+          }
+        }
+      },
+      { threshold, root, rootMargin },
+    );
+
+    observer.observe(ref.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [
+    threshold,
+    root,
+    rootMargin,
+    onInteractionStart,
+    onInteractionEnd,
+    isIntersecting,
+  ]);
+
+  return { ref, isIntersecting };
 };

@@ -107,3 +107,5 @@ export type NestedKeyOf<
         : `${Key}` | `${Key}.${NestedKeyOf<ObjectType[Key], IgnoreKeys>}`
       : `${Key}`;
 }[keyof ObjectType & string];
+
+export type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }; // NOTE: T without U
