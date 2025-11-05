@@ -11,7 +11,7 @@ export type XOR_Binary<T, U> = T | U extends object
 export type XNOR_Binary<T, U> = (T & U) | (Without<T, U> & Without<U, T>);
 
 /**
- * Computes a type-level AND for a tuple of types.
+ * Computes a type-level AND (all must true) for a tuple of types.
  *
  * Truth table for 3 arguments:
  *
@@ -34,7 +34,7 @@ export type AND<T extends any[]> = T extends [infer F, ...infer R]
   : unknown;
 
 /**
- * Computes a type-level OR for a tuple of types.
+ * Computes a type-level OR (At least one) for a tuple of types.
  *
  * Truth table for 3 arguments:
  *
@@ -57,7 +57,7 @@ export type OR<T extends any[]> = T extends [infer F, ...infer R]
   : never;
 
 /**
- * Computes a type-level XOR for a tuple of types.
+ * Computes a type-level XOR (only one/odd) for a tuple of types.
  *
  * Truth table for 3 arguments:
  *
@@ -80,7 +80,7 @@ export type XOR<T extends any[]> = T extends [infer F, ...infer R]
   : never;
 
 /**
- * Computes a type-level XNOR for a tuple of types.
+ * Computes a type-level XNOR (All or None true) for a tuple of types.
  *
  * Truth table for 3 arguments:
  *
