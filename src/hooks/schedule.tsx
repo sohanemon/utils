@@ -40,7 +40,7 @@ export function useSchedule(options: ScheduleOpts = {}) {
  * or a fallback scheduler. Useful for heavy computations, logging,
  * analytics, or background work that doesn't need to block render.
  *
- * @param {Task} task - The function to run later. Can be synchronous or return a Promise.
+ * @param {Function} effect - The function to run later. Can be synchronous or return a Promise.
  * @param {React.DependencyList[]} deps - Dependency array; task will re-run whenever these change.
  * @param {ScheduleOpts} [options] - Optional scheduling options.
  * @param {number} [options.timeout] - Max time (ms) to wait before executing the task. Defaults to 10000.
@@ -61,13 +61,21 @@ export function useSchedule(options: ScheduleOpts = {}) {
  * ```
  */
 export function useScheduledEffect(
-  task: Task,
+  effect: () => void | (() => void),
   deps: React.DependencyList = [],
   options: ScheduleOpts = {},
 ) {
   const schedule = useSchedule(options);
 
   React.useEffect(() => {
-    schedule(task);
+    let cleanup: void | (() => void);
+
+    schedule(() => {
+      cleanup = effect();
+    });
+
+    return () => {
+      if (typeof cleanup === 'function') cleanup?.();
+    };
   }, [schedule, ...deps]);
 }
