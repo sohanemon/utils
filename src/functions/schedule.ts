@@ -1,8 +1,9 @@
-type Task = () => Promise<void> | void;
+export type Task = () => Promise<void> | void;
 
-interface ScheduleOpts {
+export interface ScheduleOpts {
   retry?: number;
   delay?: number;
+  timeout?: number;
 }
 
 /**
