@@ -4,6 +4,7 @@ import * as React from 'react';
 import { copyToClipboard } from '../functions';
 
 export * from './action';
+export * from './schedule';
 
 /**
  * Hook to detect clicks outside of a referenced element.
