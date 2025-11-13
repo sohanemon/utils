@@ -1,5 +1,3 @@
-import { isSSR } from './utils';
-
 /**
  * A helper to run sync or async operations safely without try/catch.
  *

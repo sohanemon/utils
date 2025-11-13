@@ -39,7 +39,7 @@ interface UseAsyncReturn<TData, TError extends Error = Error> {
  * @returns Object with data, error, status and helper methods
  */
 export function useAsync<TData, TError extends Error = Error>(
-  asyncFn: () => Promise<TData>,
+  asyncFn: (signal: AbortSignal) => Promise<TData>,
   options: UseAsyncOptions<TData, TError> = {},
 ): UseAsyncReturn<TData, TError> {
   const { mode = 'manual', deps, onSuccess, onError, onSettled } = options;
@@ -48,7 +48,7 @@ export function useAsync<TData, TError extends Error = Error>(
   const [error, setError] = React.useState<TError | undefined>(undefined);
   const [status, setStatus] = React.useState<AsyncStatus>('idle');
 
-  const isMountedRef = React.useRef(true);
+  const abortControllerRef = React.useRef<AbortController | null>(null);
 
   const memoizedOnSuccess = React.useCallback(onSuccess || (() => {}), [
     onSuccess,
@@ -59,13 +59,20 @@ export function useAsync<TData, TError extends Error = Error>(
   ]);
 
   const execute = React.useCallback(async (): Promise<TData> => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+
     setStatus('pending');
     setError(undefined);
 
     try {
-      const result = await asyncFn();
+      const result = await asyncFn(signal);
 
-      if (isMountedRef.current) {
+      if (!signal.aborted) {
         setData(result);
         setStatus('success');
         await memoizedOnSuccess(result);
@@ -74,10 +81,14 @@ export function useAsync<TData, TError extends Error = Error>(
 
       return result;
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return undefined as TData;
+      }
+
       const error = err instanceof Error ? err : new Error(String(err));
       const typedError = error as TError;
 
-      if (isMountedRef.current) {
+      if (!signal.aborted) {
         setError(typedError);
         setStatus('error');
         await memoizedOnError(typedError);
@@ -89,16 +100,10 @@ export function useAsync<TData, TError extends Error = Error>(
   }, [asyncFn, memoizedOnSuccess, memoizedOnError, memoizedOnSettled]);
 
   React.useEffect(() => {
-    if (mode === 'auto') {
+    if (mode === 'auto' && !deps) {
       execute();
     }
-  }, [asyncFn, mode, execute]);
-
-  React.useEffect(() => {
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
+  }, [asyncFn, mode, execute, deps]);
 
   React.useEffect(
     () => {
@@ -108,6 +113,14 @@ export function useAsync<TData, TError extends Error = Error>(
     },
     deps ? deps : [],
   );
+
+  React.useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   return {
     data,
