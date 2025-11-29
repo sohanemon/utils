@@ -20,6 +20,9 @@ export type DeepRequired<T> = T extends Function
       ? { [K in keyof T]-?: DeepRequired<T[K]> }
       : T;
 
+export type SelectiveRequired<T, K extends keyof T> = Omit<T, K> &
+  Required<Pick<T, K>>;
+
 export type Never<T> = {
   [K in keyof T]: never;
 };
