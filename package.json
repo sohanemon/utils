@@ -1,6 +1,6 @@
 {
   "name": "@sohanemon/utils",
-  "version": "6.2.1",
+  "version": "6.2.2",
   "author": "Sohan Emon <sohanemon@outlook.com>",
   "description": "",
   "type": "module",
@@ -49,6 +49,8 @@
     "cn"
   ],
   "license": "ISC",
+  "homepage": "https://github.com/sohanemon/utils",
+  "website": "https://sohanjs.web.app/utils",
   "devDependencies": {
     "@types/node": "^24.10.0",
     "@types/react": "^19.2.2",
