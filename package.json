@@ -1,6 +1,6 @@
 {
   "name": "@sohanemon/utils",
-  "version": "6.2.2",
+  "version": "6.2.3",
   "author": "Sohan Emon <sohanemon@outlook.com>",
   "description": "",
   "type": "module",
@@ -41,8 +41,7 @@
     "test:list": "vitest list",
     "test:log": "vitest run --reporter verbose",
     "test:ui": "vitest --ui",
-    "prepublish": "tsc",
-    "publish": "tsc && bun publish"
+    "prepublish": "tsc"
   },
   "keywords": [
     "utils",
