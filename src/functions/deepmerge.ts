@@ -115,9 +115,9 @@ export function deepmerge<T extends Record<string, any>>(
     lastArg &&
     typeof lastArg === 'object' &&
     !Array.isArray(lastArg) &&
-    (lastArg.arrayMerge ||
-      lastArg.clone ||
-      lastArg.customMerge ||
+    (lastArg.arrayMerge !== undefined ||
+      lastArg.clone !== undefined ||
+      lastArg.customMerge !== undefined ||
       lastArg.maxDepth !== undefined)
   ) {
     options = { ...options, ...lastArg };

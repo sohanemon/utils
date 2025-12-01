@@ -38,6 +38,8 @@
     "build": "tsc",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:list": "vitest list",
+    "test:log": "vitest run --reporter verbose",
     "test:ui": "vitest --ui",
     "prepublish": "tsc",
     "publish": "tsc && bun publish"
