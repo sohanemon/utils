@@ -27,3 +27,16 @@ export const isPrimitive = (val: unknown): val is Primitive => {
       return false;
   }
 };
+export function isPlainObject(value: unknown): value is Record<string, any> {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  if (Object.prototype.toString.call(value) !== '[object Object]') {
+    return false;
+  }
+
+  // Objects with null prototype are still plain objects
+  const proto = Object.getPrototypeOf(value);
+  return proto === null || proto === Object.prototype;
+}

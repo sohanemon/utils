@@ -34,9 +34,10 @@
     "README.md"
   ],
   "scripts": {
+    "dev": "tsc --watch",
     "build": "tsc",
-    "build:watch": "tsc --watch",
-    "export": "tsc && npm publish"
+    "prepublish": "tsc",
+    "publish": "tsc && bun publish"
   },
   "keywords": [
     "utils",
