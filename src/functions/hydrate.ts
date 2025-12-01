@@ -1,3 +1,5 @@
+import { deepmerge } from './deepmerge';
+
 /**
  * Deeply cleans any value by converting all `null` values to `undefined`,
  * and merges in a fallback object for default values.
@@ -10,6 +12,7 @@
  * - Support for nested structures with Symbol properties
  * - Optional maximum recursion depth to prevent stack overflow
  * - Configurable null-to-undefined conversion
+ * - Uses deepmerge for fallback merging with configurable array strategies
  *
  * @param data - Any input data (object, array, primitive)
  * @param fallback - Optional fallback values to merge with
@@ -17,7 +20,8 @@
  * @param options.maxDepth - Maximum recursion depth (default: 100)
  * @param options.throwOnCircular - Whether to throw on circular refs (default: false)
  * @param options.convertNullToUndefined - Convert null to undefined (default: true)
- * @returns Same type as input, but with all nulls replaced by undefined
+ * @param options.arrayMerge - How to merge arrays: 'replace', 'concat', or 'merge' (default: 'merge')
+ * @returns Same type as input, but with all nulls replaced by undefined and fallbacks merged
  *
  * @throws {TypeError} If data or fallback are invalid types when strict validation is enabled
  * @throws {RangeError} If circular reference detected and throwOnCircular is true
@@ -33,6 +37,10 @@
  * @example
  * // Keep nulls as-is
  * hydrate({ a: null }, undefined, { convertNullToUndefined: false }) // { a: null }
+ *
+ * @example
+ * // Array merging
+ * hydrate({ arr: [null, 2] }, { arr: [1, 2, 3] }) // { arr: [1, 2] }
  */
 export function hydrate<T>(
   data: T,
@@ -41,128 +49,122 @@ export function hydrate<T>(
     maxDepth?: number;
     throwOnCircular?: boolean;
     convertNullToUndefined?: boolean;
+    arrayMerge?: 'replace' | 'concat' | 'merge';
   },
 ): T {
   const maxDepth = options?.maxDepth ?? 100;
   const throwOnCircular = options?.throwOnCircular ?? false;
   const convertNullToUndefined = options?.convertNullToUndefined ?? true;
+  const arrayMerge = options?.arrayMerge ?? 'merge';
 
-  // Use WeakSet for O(1) circular reference detection
-  const visited = new WeakSet<object>();
+  // First, convert null to undefined in data
+  const processedData = convertNulls(
+    data,
+    maxDepth,
+    throwOnCircular,
+    convertNullToUndefined,
+  );
 
-  return processValue(data, fallback, 0, visited) as T;
+  // Then, merge processedData into fallback using deepmerge, with processedData taking precedence
+  if (fallback === undefined) return processedData as T;
 
-  function processValue(
-    value: unknown,
-    fallbackValue: unknown,
-    depth: number,
-    visited: WeakSet<object>,
-  ): unknown {
-    // Check recursion depth
-    if (depth > maxDepth) {
-      console.warn(
-        `[hydrate] Maximum recursion depth (${maxDepth}) exceeded. Returning value as-is.`,
-      );
-      return value ?? fallbackValue;
-    }
-
-    if (value === null) {
-      const converted = convertNullToUndefined ? undefined : null;
-      return fallback ?? converted;
-    }
-
-    // Handle undefined - use fallback or return undefined
-    if (value === undefined) {
-      return fallbackValue ?? undefined;
-    }
-
-    // Handle primitives: string, number, boolean, symbol, bigint
-    const type = typeof value;
-    if (type !== 'object') {
-      return value;
-    }
-
-    if (visited.has(value as object)) {
-      if (throwOnCircular) {
-        throw new RangeError('[hydrate] Circular reference detected');
+  const customArrayMerge = (target: any[], source: any[]) => {
+    const maxLength = Math.max(target.length, source.length);
+    const merged = [];
+    for (let i = 0; i < maxLength; i++) {
+      if (i < source.length && source[i] !== undefined) {
+        merged[i] = source[i];
+      } else if (i < target.length) {
+        merged[i] = target[i];
       }
-      // Return the value as-is to break the cycle
-      return value;
     }
+    return merged;
+  };
 
-    // Mark as visited to detect circular references
-    visited.add(value as object);
+  return deepmerge(fallback as any, processedData, {
+    arrayMerge: customArrayMerge,
+    maxDepth,
+  }) as T;
+}
 
-    if (isSpecialObject(value)) {
-      return handleSpecialObject(value, fallbackValue);
-    }
-
-    // Handle arrays
-    if (Array.isArray(value)) {
-      const fallbackArray = Array.isArray(fallbackValue)
-        ? fallbackValue
-        : undefined;
-      return value.map((item, index) =>
-        processValue(item, fallbackArray?.[index], depth + 1, visited),
-      );
-    }
-
-    // Handle plain objects
-    if (isPlainObject(value)) {
-      const fallbackObj = isPlainObject(fallbackValue)
-        ? (fallbackValue as Record<string, any>)
-        : {};
-      const result: Record<string, any> = { ...fallbackObj };
-
-      // Process all enumerable properties including symbols
-      const keys = new Set([
-        ...Object.keys(value),
-        ...Object.keys(fallbackObj),
-        ...Object.getOwnPropertySymbols(value),
-        ...Object.getOwnPropertySymbols(fallbackObj),
-      ]);
-
-      for (const k of keys) {
-        const propValue = (value as any)[k];
-        const fallbackProp = (fallbackObj as any)[k];
-
-        (result as any)[k] = processValue(
-          propValue,
-          fallbackProp,
-          depth + 1,
-          visited,
-        );
-      }
-
-      return result;
-    }
-
-    // Handle plain objects
-    if (isPlainObject(value)) {
-      const fallbackObj = isPlainObject(fallbackValue)
-        ? (fallbackValue as Record<string, any>)
-        : {};
-      const result: Record<string, any> = { ...fallbackObj };
-
-      // Process all enumerable properties including symbols
-      const keys = [
-        ...Object.keys(value),
-        ...Object.getOwnPropertySymbols(value),
-      ];
-
-      for (const k of keys as string[]) {
-        const propValue = (value as any)[k];
-        const fallbackProp = (fallbackObj as any)[k];
-
-        result[k] = processValue(propValue, fallbackProp, depth + 1, visited);
-      }
-
-      return result;
-    }
-
-    // For other objects, return as-is (instances, etc.)
-    return value ?? fallbackValue;
+/**
+ * Converts null values to undefined in the data structure
+ */
+function convertNulls(
+  value: unknown,
+  maxDepth: number,
+  throwOnCircular: boolean,
+  convertNullToUndefined: boolean,
+  depth = 0,
+  visited = new WeakSet<object>(),
+): unknown {
+  if (depth > maxDepth) {
+    console.warn(
+      `[hydrate] Maximum recursion depth (${maxDepth}) exceeded. Returning value as-is.`,
+    );
+    return value;
   }
+
+  if (value === null) {
+    return convertNullToUndefined ? undefined : null;
+  }
+
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (typeof value !== 'object') {
+    return value;
+  }
+
+  if (visited.has(value as object)) {
+    if (throwOnCircular) {
+      throw new RangeError('[hydrate] Circular reference detected');
+    }
+    return value;
+  }
+
+  visited.add(value as object);
+
+  if (isSpecialObject(value)) {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) =>
+      convertNulls(
+        item,
+        maxDepth,
+        throwOnCircular,
+        convertNullToUndefined,
+        depth + 1,
+        visited,
+      ),
+    );
+  }
+
+  if (isPlainObject(value)) {
+    const result: Record<string, any> = {};
+    const keys = [
+      ...Object.keys(value),
+      ...Object.getOwnPropertySymbols(value),
+    ];
+
+    for (const k of keys) {
+      result[k as string] = convertNulls(
+        (value as any)[k],
+        maxDepth,
+        throwOnCircular,
+        convertNullToUndefined,
+        depth + 1,
+        visited,
+      );
+    }
+
+    return result;
+  }
+
+  return value;
 }
 
 /**
@@ -204,15 +206,6 @@ function isSpecialObject(value: unknown): boolean {
   ];
 
   return specialTypes.includes(stringTag);
-}
-
-/**
- * Handles special object types that shouldn't be deeply cloned
- */
-function handleSpecialObject(value: unknown, fallbackValue: unknown): unknown {
-  // For special types, return the original value or fallback
-  // These shouldn't be deeply cloned as they have internal state
-  return value ?? fallbackValue;
 }
 
 /**

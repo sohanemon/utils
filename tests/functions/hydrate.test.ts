@@ -9,17 +9,17 @@ describe('hydrate', () => {
 
   it('should merge with fallback', () => {
     const result = hydrate({ a: null } as any, { a: 'default' });
-    expect(result).toEqual({ a: { a: 'default' } });
+    expect(result).toEqual({ a: 'default' });
   });
 
   it('should handle nested objects', () => {
     const result = hydrate({ a: { b: null } } as any, { a: { b: 'default' } });
-    expect(result).toEqual({ a: { b: { a: { b: 'default' } } } });
+    expect(result).toEqual({ a: { b: 'default' } });
   });
 
   it('should handle arrays', () => {
     const result = hydrate([null, 1] as any, ['default'] as any);
-    expect(result).toEqual([['default'], 1]);
+    expect(result).toEqual(['default', 1]);
   });
 
   it('should respect convertNullToUndefined option', () => {

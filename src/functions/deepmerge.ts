@@ -83,7 +83,11 @@ export function deepmerge<
   target: T,
   sources: S,
   options?: {
-    arrayMerge?: 'replace' | 'concat' | 'merge';
+    arrayMerge?:
+      | 'replace'
+      | 'concat'
+      | 'merge'
+      | ((target: any[], source: any[]) => any[]);
     clone?: boolean;
     customMerge?: (
       key: string | symbol,
@@ -213,7 +217,10 @@ export function deepmerge<T extends Record<string, any>>(
     return result;
   }
 
-  function mergeArrays(target: any[], source: any[], strategy: string): any[] {
+  function mergeArrays(target: any[], source: any[], strategy: any): any[] {
+    if (typeof strategy === 'function') {
+      return strategy(target, source);
+    }
     switch (strategy) {
       case 'concat':
         return [...target, ...source];
