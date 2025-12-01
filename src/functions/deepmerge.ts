@@ -32,6 +32,7 @@ type TMerged<T> = [T] extends [Array<any>]
     : [T] extends [object]
       ? TPartialKeys<{ [K in TAllKeys<T>]: TMerged<TIndexValue<T, K>> }, never>
       : T;
+
 /**
  * Deeply merges multiple objects, with later sources taking precedence.
  * Handles nested objects, arrays, and special object types with circular reference detection.
@@ -108,9 +109,19 @@ export function deepmerge<T extends Record<string, any>>(
     maxDepth?: number;
   } = {};
 
-  if (Array.isArray(args[0])) {
-    sources = args[0];
-    options = args[1] || {};
+  // Check if last arg is options object
+  const lastArg = args[args.length - 1];
+  if (
+    lastArg &&
+    typeof lastArg === 'object' &&
+    !Array.isArray(lastArg) &&
+    (lastArg.arrayMerge ||
+      lastArg.clone ||
+      lastArg.customMerge ||
+      lastArg.maxDepth !== undefined)
+  ) {
+    options = { ...options, ...lastArg };
+    sources = args.slice(0, -1);
   } else {
     sources = args;
   }
@@ -127,7 +138,7 @@ export function deepmerge<T extends Record<string, any>>(
   return mergeObjects(target, sources, 0);
 
   function mergeObjects(target: any, sources: any[], depth: number): any {
-    if (depth > maxDepth) {
+    if (depth >= maxDepth) {
       console.warn(
         `[deepmerge] Maximum depth ${maxDepth} exceeded. Returning target as-is.`,
       );
