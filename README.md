@@ -3,6 +3,7 @@
 ![npm version](https://img.shields.io/npm/v/@sohanemon/utils)
 ![npm downloads](https://img.shields.io/npm/dm/@sohanemon/utils)
 ![License](https://img.shields.io/npm/l/@sohanemon/utils)
+![Tests](https://github.com/sohanemon/sohanemon-utils/actions/workflows/test.yml/badge.svg)
 
 ## Description
 
