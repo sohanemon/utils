@@ -36,6 +36,9 @@
   "scripts": {
     "dev": "tsc --watch",
     "build": "tsc",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:ui": "vitest --ui",
     "prepublish": "tsc",
     "publish": "tsc && bun publish"
   },
@@ -47,7 +50,9 @@
   "devDependencies": {
     "@types/node": "^24.10.0",
     "@types/react": "^19.2.2",
-    "typescript": "^5.9.3"
+    "@vitest/ui": "^4.0.14",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.14"
   },
   "dependencies": {
     "@iconify/react": "^6.0.2",

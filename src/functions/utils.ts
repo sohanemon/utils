@@ -556,7 +556,7 @@ export function normalizeText(
   let result = str.normalize('NFC');
 
   if (removeAccents) {
-    result = result.replace(/\p{M}/gu, ''); // remove accents
+    result = result.normalize('NFD').replace(/\p{M}/gu, ''); // decompose and remove accents
   }
 
   if (removeNonAlphanumeric) {

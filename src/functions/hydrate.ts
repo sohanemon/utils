@@ -67,7 +67,8 @@ export function hydrate<T>(
     }
 
     if (value === null) {
-      return convertNullToUndefined ? undefined : (fallbackValue ?? null);
+      const converted = convertNullToUndefined ? undefined : null;
+      return fallback ?? converted;
     }
 
     // Handle undefined - use fallback or return undefined
@@ -104,6 +105,36 @@ export function hydrate<T>(
       return value.map((item, index) =>
         processValue(item, fallbackArray?.[index], depth + 1, visited),
       );
+    }
+
+    // Handle plain objects
+    if (isPlainObject(value)) {
+      const fallbackObj = isPlainObject(fallbackValue)
+        ? (fallbackValue as Record<string, any>)
+        : {};
+      const result: Record<string, any> = { ...fallbackObj };
+
+      // Process all enumerable properties including symbols
+      const keys = new Set([
+        ...Object.keys(value),
+        ...Object.keys(fallbackObj),
+        ...Object.getOwnPropertySymbols(value),
+        ...Object.getOwnPropertySymbols(fallbackObj),
+      ]);
+
+      for (const k of keys) {
+        const propValue = (value as any)[k];
+        const fallbackProp = (fallbackObj as any)[k];
+
+        (result as any)[k] = processValue(
+          propValue,
+          fallbackProp,
+          depth + 1,
+          visited,
+        );
+      }
+
+      return result;
     }
 
     // Handle plain objects
@@ -192,9 +223,8 @@ export function isWithFallbackCompatible<T extends object>(
 ): value is T {
   return (
     typeof value === 'object' &&
-    (value === null ||
-      Array.isArray(value) ||
-      (typeof value === 'object' &&
-        Object.prototype.toString.call(value) === '[object Object]'))
+    value !== null &&
+    (Array.isArray(value) ||
+      Object.prototype.toString.call(value) === '[object Object]')
   );
 }
