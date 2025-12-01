@@ -1,6 +1,6 @@
 {
   "name": "@sohanemon/utils",
-  "version": "6.0.1",
+  "version": "6.1.0",
   "author": "Sohan Emon <sohanemon@outlook.com>",
   "description": "",
   "type": "module",
@@ -58,7 +58,6 @@
     "@iconify/react": "^6.0.2",
     "clsx": "^2.1.1",
     "react": "^19.2.0",
-    "tailwind-merge": "^3.3.1",
-    "ts-deepmerge": "^7.0.3"
+    "tailwind-merge": "^3.3.1"
   }
 }
