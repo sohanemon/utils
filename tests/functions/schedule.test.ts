@@ -37,8 +37,10 @@ describe('schedule', () => {
   it('should retry on failure', () => {
     const task = vi
       .fn()
-      .mockRejectedValueOnce(new Error('First failure'))
-      .mockResolvedValue(undefined);
+      .mockImplementationOnce(() => {
+        throw new Error('First failure');
+      })
+      .mockReturnValue(undefined);
 
     schedule(task, { retry: 1, delay: 100 });
 
@@ -52,7 +54,9 @@ describe('schedule', () => {
   });
 
   it('should log retry messages', () => {
-    const task = vi.fn().mockRejectedValue(new Error('Failure'));
+    const task = vi.fn(() => {
+      throw new Error('Failure');
+    });
     schedule(task, { retry: 1, delay: 50 });
 
     vi.runOnlyPendingTimers();
@@ -68,7 +72,9 @@ describe('schedule', () => {
   });
 
   it('should log failure after all retries exhausted', () => {
-    const task = vi.fn().mockRejectedValue(new Error('Persistent failure'));
+    const task = vi.fn(() => {
+      throw new Error('Persistent failure');
+    });
     schedule(task, { retry: 1, delay: 50 });
 
     vi.runOnlyPendingTimers();
@@ -106,7 +112,9 @@ describe('schedule', () => {
   });
 
   it('should use default retry of 0', () => {
-    const task = vi.fn().mockRejectedValue(new Error('Failure'));
+    const task = vi.fn(() => {
+      throw new Error('Failure');
+    });
     schedule(task);
 
     vi.runOnlyPendingTimers();
@@ -124,8 +132,10 @@ describe('schedule', () => {
   it('should use default delay of 0', () => {
     const task = vi
       .fn()
-      .mockRejectedValueOnce(new Error('First'))
-      .mockResolvedValue(undefined);
+      .mockImplementationOnce(() => {
+        throw new Error('First');
+      })
+      .mockReturnValue(undefined);
 
     schedule(task, { retry: 1 });
 

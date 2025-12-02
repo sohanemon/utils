@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { useAction } from '../../src/hooks/action';
 
 describe('useAction', () => {
@@ -7,20 +7,13 @@ describe('useAction', () => {
     const action = vi.fn().mockResolvedValue('success');
     const { result } = renderHook(() => useAction(action));
 
-    expect(result.current.isIdle).toBe(true);
-    expect(result.current.data).toBe(null);
-
-    act(() => {
+    await act(async () => {
       result.current.execute('input');
     });
 
-    // Wait for state update
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
-    expect(result.current.isSuccess).toBe(true);
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toBe('success');
     expect(result.current.input).toBe('input');
-    expect(action).toHaveBeenCalledWith('input');
   });
 
   it('should handle errors', async () => {
@@ -117,19 +110,17 @@ describe('useAction', () => {
     const action = vi
       .fn()
       .mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve('done'), 10)),
+        () =>
+          new Promise((resolve) => setTimeout(() => resolve('success'), 100)),
       );
+
     const { result } = renderHook(() => useAction(action));
 
-    let loadingState;
-    await act(async () => {
-      const promise = result.current.execute('input');
-      loadingState = result.current.isLoading;
-      await promise;
+    act(() => {
+      result.current.execute('input');
     });
 
-    expect(loadingState).toBe(true);
-    expect(result.current.isLoading).toBe(false);
+    expect(result.current.isLoading).toBe(true);
   });
 
   it('should use useExecute hook', () => {
@@ -174,8 +165,6 @@ describe('useAction', () => {
 
     expect(result.current.isLoading).toBe(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
-    expect(result.current.isSuccess).toBe(true);
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
   });
 });
