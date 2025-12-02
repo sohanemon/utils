@@ -1,6 +1,6 @@
 {
   "name": "@sohanemon/utils",
-  "version": "6.2.4",
+  "version": "6.2.5",
   "author": "Sohan Emon <sohanemon@outlook.com>",
   "description": "",
   "type": "module",
@@ -45,7 +45,8 @@
     "test:list": "vitest list",
     "test:log": "vitest run --reporter verbose",
     "test:ui": "vitest --ui",
-    "prepublish": "tsc"
+    "prepublish": "tsc",
+    "release": "tsgo --noEmit && npm run build && bumpp && npm publish"
   },
   "keywords": [
     "utils",
