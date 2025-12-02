@@ -58,8 +58,8 @@ describe('convertToSlug', () => {
 });
 
 describe('isSSR', () => {
-  it('should return true in node environment', () => {
-    expect(isSSR).toBe(true); // since vitest runs in node
+  it('should return false in test environment with window', () => {
+    expect(isSSR).toBe(false); // vitest with happy-dom provides window
   });
 });
 
