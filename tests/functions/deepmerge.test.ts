@@ -45,10 +45,10 @@ describe('deepmerge', () => {
     obj1.self = obj1;
     const obj2 = { b: 2 };
     const result = deepmerge(obj1, obj2);
-    expect(result.a).toBe(1);
-    expect(result.b).toBe(2);
+    expect(result['a']).toBe(1);
+    expect(result['b']).toBe(2);
     // Note: with cloning, self points to original, not result
-    expect(result.self).toBe(obj1);
+    expect(result['self']).toBe(obj1);
   });
 
   it('should respect maxDepth', () => {
@@ -65,7 +65,7 @@ describe('deepmerge', () => {
       { a: 1 },
       { a: 2 },
       {
-        customMerge: (key, targetVal, sourceVal) => {
+        customMerge: (key: string, targetVal: any, sourceVal: any) => {
           if (key === 'a') return targetVal + sourceVal;
           return sourceVal;
         },

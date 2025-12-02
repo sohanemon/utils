@@ -67,7 +67,7 @@ export const ResponsiveIndicator: React.FC = () => {
     ...positions[position], // Apply the current position
   };
 
-  if (process.env.NODE_ENV === 'production') return null;
+  if (process.env['NODE_ENV'] === 'production') return null;
 
   return (
     <button type="button" style={buttonStyle} onClick={handleClick}>

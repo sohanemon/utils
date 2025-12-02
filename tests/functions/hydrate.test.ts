@@ -83,7 +83,7 @@ describe('hydrate', () => {
     expect(result.date).toBe(date);
     expect(result.reg).toEqual(/test/);
     expect(result.map).toBeInstanceOf(Map);
-    expect(result.map.get('key')).toBe(null); // null not converted since not recursed
+    expect((result.map as Map<string, any>).get('key')).toBe(null); // null not converted since not recursed
   });
 
   it('should handle functions', () => {

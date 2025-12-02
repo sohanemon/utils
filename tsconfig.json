@@ -13,6 +13,12 @@
     "emitDeclarationOnly": true,
     "verbatimModuleSyntax": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts", "tests/**/*.tsx"],
-  "exclude": ["node_modules", "dist", "coverage"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "coverage",
+    "tests/**/*.ts",
+    "tests/**/*.tsx"
+  ]
 }

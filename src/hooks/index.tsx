@@ -14,7 +14,7 @@ export * from './schedule';
  */
 export const useClickOutside = (
   callback: () => void = () => alert('clicked outside'),
-): React.RefObject<HTMLDivElement> => {
+): React.RefObject<HTMLDivElement | null> => {
   const ref = React.useRef<HTMLDivElement>(null);
   const listener = (e: MouseEvent | TouchEvent) => {
     if (ref.current && !ref.current.contains(e.target as Node)) {
@@ -518,7 +518,7 @@ export const useDomCalculation = ({
       const observer = new MutationObserver((mutations) => {
         let shouldRecalculate = false;
         for (const mutation of mutations) {
-          for (const node of mutation.addedNodes) {
+          for (const node of Array.from(mutation.addedNodes)) {
             if (node instanceof Element) {
               if (
                 blockIds.includes(node.id) ||
@@ -530,7 +530,7 @@ export const useDomCalculation = ({
             }
           }
           if (shouldRecalculate) break;
-          for (const node of mutation.removedNodes) {
+          for (const node of Array.from(mutation.removedNodes)) {
             if (node instanceof Element) {
               if (
                 blockIds.includes(node.id) ||
@@ -715,7 +715,7 @@ export const useIntersection = ({
           }
         }
       },
-      { threshold, root, rootMargin },
+      { threshold, root, ...(rootMargin && { rootMargin }) },
     );
 
     observer.observe(ref.current);

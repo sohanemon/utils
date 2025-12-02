@@ -25,8 +25,8 @@ export function ScrollableMarker() {
     };
 
     const markScrollable = (el: HTMLElement) => {
-      if (isScrollable(el)) el.dataset.scrollable = 'true';
-      else delete el.dataset.scrollable;
+      if (isScrollable(el)) el.dataset['scrollable'] = 'true';
+      else delete el.dataset['scrollable'];
     };
 
     const scanTree = (node: HTMLElement) => {
