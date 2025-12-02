@@ -1,6 +1,6 @@
 {
   "name": "@sohanemon/utils",
-  "version": "6.2.10",
+  "version": "6.3.3",
   "author": "Sohan Emon <sohanemon@outlook.com>",
   "description": "",
   "type": "module",
@@ -8,22 +8,21 @@
     "dist"
   ],
   "source": "./src/index.ts",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.d.cts",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "exports": {
     ".": {
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "types": "./dist/index.d.ts"
-    },
-    "./hooks": {
-      "import": "./dist/hooks.js",
-      "types": "./dist/hooks.d.ts"
+      "require": "./dist/index.cjs"
     },
     "./components": {
-      "import": "./dist/components.js",
-      "types": "./dist/components.d.ts"
+      "import": "./dist/components/index.js",
+      "require": "./dist/components/index.cjs"
+    },
+    "./hooks": {
+      "import": "./dist/hooks/index.js",
+      "require": "./dist/hooks/index.cjs"
     },
     "./package.json": "./package.json"
   },
