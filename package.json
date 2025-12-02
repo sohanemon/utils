@@ -1,28 +1,24 @@
 {
   "name": "@sohanemon/utils",
-  "version": "6.2.7",
+  "version": "6.2.9",
   "author": "Sohan Emon <sohanemon@outlook.com>",
   "description": "",
   "type": "module",
+  "files": [
+    "dist"
+  ],
   "source": "./src/index.ts",
-  "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "exports": {
     ".": "./dist/index.js",
-
     "./core": "./dist/index.js",
-
     "./functions": "./dist/functions/index.js",
-    "./functions/*": "./dist/functions/*.js",
-
     "./hooks": "./dist/hooks/index.js",
-    "./hooks/*": "./dist/hooks/*.js",
-
     "./components": "./dist/components/index.js",
-    "./components/*": "./dist/components/*.js",
-
     "./types": "./dist/types/index.js",
-    "./types/*": "./dist/types/*.js"
+    "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
@@ -43,19 +39,21 @@
       ]
     }
   },
-  "files": [
-    "dist",
-    "README.md"
-  ],
   "scripts": {
-    "dev": "tsc --watch",
-    "build": "tsc",
+    "build": "tsdown",
+    "dev": "tsdown --watch",
     "test": "vitest",
     "test:run": "vitest run",
     "test:list": "vitest list",
     "test:log": "vitest run --reporter verbose",
     "test:ui": "vitest --ui",
-    "prepublish": "tsc",
+    "check": "biome check .",
+    "fix": "biome check --diagnostic-level=error --write .",
+    "lint": "biome lint .",
+    "lint:fix": "biome lint --write --unsafe .",
+    "format": "biome format .",
+    "format:write": "biome format . --write",
+    "typecheck": "tsgo --noEmit",
     "release": "tsgo --noEmit && npm run build && npm publish"
   },
   "keywords": [
@@ -63,19 +61,40 @@
     "cn"
   ],
   "license": "ISC",
-  "homepage": "https://github.com/sohanemon/utils",
-  "website": "https://sohanjs.web.app/utils",
+  "homepage": "https://sohanjs.web.app/utils",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sohanemon/utils.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sohanemon/utils/issues"
+  },
   "devDependencies": {
-    "@types/node": "^24.10.0",
-    "@types/react": "^19.2.2",
+    "@biomejs/biome": "2.3.8",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@tsconfig/strictest": "^2.0.8",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
     "@vitest/ui": "^4.0.14",
+    "happy-dom": "^20.0.10",
+    "tsdown": "^0.16.4",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.14"
+    "vite": "npm:rolldown-vite@^7.2.5",
+    "vitest": "^4.0.9"
   },
   "dependencies": {
     "@iconify/react": "^6.0.2",
     "clsx": "^2.1.1",
-    "react": "^19.2.0",
     "tailwind-merge": "^3.3.1"
+  },
+  "peerDependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

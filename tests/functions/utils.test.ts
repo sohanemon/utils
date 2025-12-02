@@ -1,18 +1,18 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
-  cn,
-  isLinkActive,
   cleanSrc,
+  cn,
   convertToNormalCase,
   convertToSlug,
-  isSSR,
-  svgToBase64,
-  sleep,
   debounce,
-  throttle,
-  printf,
   escapeRegExp,
+  isLinkActive,
+  isSSR,
   normalizeText,
+  printf,
+  sleep,
+  svgToBase64,
+  throttle,
 } from '../../src/functions/utils';
 
 describe('cn', () => {

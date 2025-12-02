@@ -1,4 +1,4 @@
-import { Without } from './utilities';
+import type { Without } from './utilities';
 
 export type BUFFER<T> = T;
 
