@@ -1,11 +1,45 @@
 'use client';
 import * as React from 'react';
 import { isSSR } from '../functions';
-export const ResponsiveIndicator: React.FC = () => {
+
+type Side = 'bottom-left' | 'bottom-right' | 'top-right' | 'top-left';
+
+interface ResponsiveIndicatorProps {
+  side?: Side;
+  offset?: number;
+}
+
+export const ResponsiveIndicator: React.FC<ResponsiveIndicatorProps> = ({
+  side,
+  offset = 2,
+}) => {
   const [viewportWidth, setViewportWidth] = React.useState(
     isSSR ? 0 : window.innerWidth,
   );
-  const [position, setPosition] = React.useState(0); // State to manage button position
+
+  const sides = [
+    'bottom-left',
+    'bottom-right',
+    'top-right',
+    'top-left',
+  ] as const;
+  type Side = 'bottom-left' | 'bottom-right' | 'top-right' | 'top-left';
+
+  const sideStyles: Record<Side, (offset: number) => React.CSSProperties> = {
+    'bottom-left': (offset) => ({
+      bottom: `${offset}rem`,
+      left: `${offset}rem`,
+    }),
+    'bottom-right': (offset) => ({
+      bottom: `${offset}rem`,
+      right: `${offset}rem`,
+    }),
+    'top-right': (offset) => ({ top: `${offset}rem`, right: `${offset}rem` }),
+    'top-left': (offset) => ({ top: `${offset}rem`, left: `${offset}rem` }),
+  };
+
+  const initialSide = side || 'bottom-left';
+  const [currentSide, setCurrentSide] = React.useState<Side>(initialSide);
 
   React.useEffect(() => {
     const handleResize = () => {
@@ -21,7 +55,9 @@ export const ResponsiveIndicator: React.FC = () => {
 
   // Function to handle button click
   const handleClick = () => {
-    setPosition((prevPosition) => (prevPosition + 1) % 4); // Cycle through positions
+    const currentIndex = sides.indexOf(currentSide);
+    const nextIndex = (currentIndex + 1) % sides.length;
+    setCurrentSide(sides[nextIndex]!);
   };
 
   let text = '';
@@ -39,13 +75,7 @@ export const ResponsiveIndicator: React.FC = () => {
     text = '2xl';
   }
 
-  // Define positions
-  const positions = [
-    { bottom: '2rem', left: '2rem' }, // Bottom left
-    { bottom: '2rem', right: '2rem' }, // Bottom right
-    { top: '2rem', right: '2rem' }, // Top right
-    { top: '2rem', left: '2rem' }, // Top left
-  ];
+  const positionStyle = sideStyles[currentSide](offset);
 
   const buttonStyle: React.CSSProperties = {
     position: 'fixed',
@@ -64,7 +94,7 @@ export const ResponsiveIndicator: React.FC = () => {
       '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
     padding: '0.5rem',
     transition: 'all 0.2s ease-in-out',
-    ...positions[position], // Apply the current position
+    ...positionStyle, // Apply the current position
   };
 
   if (process.env['NODE_ENV'] === 'production') return null;

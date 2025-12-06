@@ -53,4 +53,58 @@ describe('ResponsiveIndicator', () => {
 
     process.env.NODE_ENV = originalEnv;
   });
+
+  it('should have default position styles', () => {
+    render(<ResponsiveIndicator />);
+
+    const button = screen.getByRole('button');
+    expect(button.style.bottom).toBe('2rem');
+    expect(button.style.left).toBe('2rem');
+  });
+
+  it('should accept custom side prop', () => {
+    render(<ResponsiveIndicator side="top-right" />);
+
+    const button = screen.getByRole('button');
+    expect(button.style.top).toBe('2rem');
+    expect(button.style.right).toBe('2rem');
+  });
+
+  it('should accept custom offset prop', () => {
+    render(<ResponsiveIndicator offset={3} />);
+
+    const button = screen.getByRole('button');
+    expect(button.style.bottom).toBe('3rem');
+    expect(button.style.left).toBe('3rem');
+  });
+
+  it('should cycle through positions on click', () => {
+    render(<ResponsiveIndicator />);
+
+    const button = screen.getByRole('button');
+
+    // Initial: bottom-left
+    expect(button.style.bottom).toBe('2rem');
+    expect(button.style.left).toBe('2rem');
+
+    // Click to bottom-right
+    fireEvent.click(button);
+    expect(button.style.bottom).toBe('2rem');
+    expect(button.style.right).toBe('2rem');
+
+    // Click to top-right
+    fireEvent.click(button);
+    expect(button.style.top).toBe('2rem');
+    expect(button.style.right).toBe('2rem');
+
+    // Click to top-left
+    fireEvent.click(button);
+    expect(button.style.top).toBe('2rem');
+    expect(button.style.left).toBe('2rem');
+
+    // Click back to bottom-left
+    fireEvent.click(button);
+    expect(button.style.bottom).toBe('2rem');
+    expect(button.style.left).toBe('2rem');
+  });
 });
