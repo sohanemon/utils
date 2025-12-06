@@ -7,11 +7,13 @@ type Side = 'bottom-left' | 'bottom-right' | 'top-right' | 'top-left';
 interface ResponsiveIndicatorProps {
   side?: Side;
   offset?: number;
+  unit?: 'px' | 'rem';
 }
 
 export const ResponsiveIndicator: React.FC<ResponsiveIndicatorProps> = ({
   side,
   offset = 2,
+  unit = 'px',
 }) => {
   const [viewportWidth, setViewportWidth] = React.useState(
     isSSR ? 0 : window.innerWidth,
@@ -71,8 +73,13 @@ export const ResponsiveIndicator: React.FC<ResponsiveIndicatorProps> = ({
     text = 'lg';
   } else if (viewportWidth >= 1280 && viewportWidth < 1536) {
     text = 'xl';
-  } else {
+  } else if (viewportWidth >= 1536 && viewportWidth < 1792) {
     text = '2xl';
+  } else {
+    text =
+      unit === 'rem'
+        ? `${(viewportWidth / 16).toFixed(1)}rem`
+        : `${viewportWidth}${unit}`;
   }
 
   const positionStyle = sideStyles[currentSide](offset);
@@ -81,9 +88,9 @@ export const ResponsiveIndicator: React.FC<ResponsiveIndicatorProps> = ({
     position: 'fixed',
     zIndex: 50,
     display: 'grid',
-    height: '2.5rem',
-    width: '2.5rem',
-    borderRadius: '50%',
+    minHeight: '2.5rem',
+    minWidth: '2.5rem',
+    borderRadius: '30px',
     placeContent: 'center',
     backgroundColor: '#2d3748',
     fontFamily: 'Courier New, Courier, monospace',
