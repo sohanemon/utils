@@ -3,6 +3,11 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
@@ -10,6 +15,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "babel-plugin-react-compiler": "^1.0.0",
     "next": "^16.0.7",
     "nextra": "^4.6.1",
     "nextra-theme-docs": "^4.6.1",
