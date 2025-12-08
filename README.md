@@ -354,7 +354,7 @@ useWindowEvent<K extends keyof WindowEventMap>(
   options?: boolean | AddEventListenerOptions
 ): void
 
-useQuerySelector<T extends Element>(selector: string): T | null
+useQuerySelector<T extends Element>(selector: string | React.RefObject<T | null>): T | null
 
 useIsClient(): boolean
 

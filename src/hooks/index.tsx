@@ -401,13 +401,18 @@ export const useUrlParams = <T extends string | number | boolean>(
 };
 
 /**
- * Hook to select a DOM element by CSS selector.
- * @param selector - The CSS selector string.
+ * Hook to select a DOM element by CSS selector or ref.
+ * @param selector - The CSS selector string or React ref object.
  * @returns The selected DOM element or null if not found.
  *
  * @example
  * ```tsx
+ * // Using CSS selector
  * const headerElement = useQuerySelector('.header');
+ *
+ * // Using ref
+ * const ref = useRef<HTMLDivElement>(null);
+ * const element = useQuerySelector(ref);
  *
  * useEffect(() => {
  *   if (headerElement) {
@@ -417,13 +422,20 @@ export const useUrlParams = <T extends string | number | boolean>(
  * ```
  */
 export const useQuerySelector = <T extends Element>(
-  selector: string,
+  selector: string | React.RefObject<T | null>,
 ): T | null => {
   const [element, setElement] = React.useState<T | null>(null);
   const elementRef = React.useRef<T | null>(null);
 
   React.useLayoutEffect(() => {
-    const referenceElement = document.querySelector<T>(selector);
+    let referenceElement: T | null = null;
+
+    if (typeof selector === 'string') {
+      referenceElement = document.querySelector<T>(selector);
+    } else if (selector?.current) {
+      referenceElement = selector.current;
+    }
+
     if (!referenceElement) return;
 
     if (elementRef.current !== referenceElement) {

@@ -107,6 +107,13 @@ describe('hooks/index', () => {
 
       expect(result.current).toBeNull();
     });
+
+    it('should work with ref', () => {
+      const ref = React.createRef<HTMLDivElement>();
+      const { result } = renderHook(() => useQuerySelector(ref));
+
+      expect(result.current).toBeNull();
+    });
   });
 
   describe('useIsScrolling', () => {
