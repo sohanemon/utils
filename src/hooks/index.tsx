@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { copyToClipboard } from '../functions';
+import { useScheduledEffect } from './schedule';
 
 export * from './action';
 export * from './async';
@@ -176,7 +177,7 @@ export function useUpdateEffect(
 export function useDebounce<T>(state: T, delay = 500): T {
   const [debouncedState, setDebouncedState] = React.useState<T>(state);
 
-  React.useEffect(() => {
+  useScheduledEffect(() => {
     const timer = setTimeout(() => setDebouncedState(state), delay);
 
     return () => {
@@ -224,7 +225,7 @@ export function useTimeout(
     savedCallback.current = callback;
   }, [callback]);
 
-  React.useEffect(() => {
+  useScheduledEffect(() => {
     if (!delay && delay !== 0) {
       return;
     }
@@ -255,7 +256,7 @@ export function useWindowEvent<K extends keyof WindowEventMap>(
   listener: (this: Window, ev: WindowEventMap[K]) => void,
   options?: boolean | AddEventListenerOptions,
 ): void {
-  React.useEffect(() => {
+  useScheduledEffect(() => {
     window.addEventListener(type, listener, options);
     return () => window.removeEventListener(type, listener, options);
   }, [type, listener, options]);
@@ -287,7 +288,7 @@ export const useSessionStorage = <T extends Record<string, any>>(
 ): SessionStorageValue<T> => {
   const [storedValue, setStoredValue] = React.useState<T>(defaultValue);
 
-  React.useEffect(() => {
+  useScheduledEffect(() => {
     const value = sessionStorage.getItem(key);
     if (value) {
       setStoredValue(JSON.parse(value));
@@ -337,7 +338,7 @@ export const useLocalStorage = <T extends Record<string, any>>(
 ): LocalStorageValue<T> => {
   const [storedValue, setStoredValue] = React.useState<T>(defaultValue);
 
-  React.useEffect(() => {
+  useScheduledEffect(() => {
     const value = localStorage.getItem(key);
     if (value) {
       setStoredValue(JSON.parse(value));
@@ -382,7 +383,7 @@ export const useUrlParams = <T extends string | number | boolean>(
 ): [T, (value: T) => void] => {
   const [value, setValue] = React.useState<T>(defaultValue);
 
-  React.useEffect(() => {
+  useScheduledEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const paramValue = params.get(key);
     if (paramValue !== null) {
@@ -427,7 +428,7 @@ export const useQuerySelector = <T extends Element>(
   const [element, setElement] = React.useState<T | null>(null);
   const elementRef = React.useRef<T | null>(null);
 
-  React.useLayoutEffect(() => {
+  useScheduledEffect(() => {
     let referenceElement: T | null = null;
 
     if (typeof selector === 'string') {
@@ -477,7 +478,7 @@ export const useQuerySelector = <T extends Element>(
 export function useIsClient(): boolean {
   const [isClient, setIsClient] = React.useState(false);
 
-  React.useEffect(() => {
+  useScheduledEffect(() => {
     setIsClient(true);
   }, []);
 
@@ -582,7 +583,7 @@ export const useHeightCalculation = ({
 }: CalculationProps2): number => {
   const [height, setTableHeight] = React.useState<number>(500);
 
-  const handleResize = () => {
+  const handleResize = React.useCallback(() => {
     const blockHeight = blockIds.reduce(
       (prevHeight, id) =>
         prevHeight + (document.getElementById(id)?.clientHeight || 0),
@@ -592,9 +593,9 @@ export const useHeightCalculation = ({
       ? window.innerHeight - blockHeight - margin
       : blockHeight + margin;
     setTableHeight(height);
-  };
+  }, [blockIds, margin, substract]);
 
-  useIsomorphicEffect(() => {
+  useScheduledEffect(() => {
     handleResize();
     if (!dynamic) return;
 
@@ -610,7 +611,7 @@ export const useHeightCalculation = ({
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [handleResize, dynamic]);
 
   return height;
 };
@@ -674,6 +675,13 @@ export const useDomCalculation = ({
     width: 500,
   });
 
+  const [calculationResults, setCalculationResults] = React.useState<{
+    blocksWidth: number;
+    blocksHeight: number;
+    remainingWidth: number;
+    remainingHeight: number;
+  } | null>(null);
+
   const handleCalculation = React.useCallback(() => {
     const blocksHeight = blockIds.reduce(
       (prevHeight, id) =>
@@ -703,15 +711,24 @@ export const useDomCalculation = ({
       return { height, width };
     });
 
-    onChange?.({
+    // Schedule the onChange callback since it's typically for side effects like logging or analytics
+    setCalculationResults({
       blocksWidth,
       blocksHeight,
       remainingWidth: width,
       remainingHeight: height,
     });
-  }, [blockIds, margin, substract, onChange]);
+  }, [blockIds, margin, substract]);
 
-  useIsomorphicEffect(() => {
+  // Use scheduled effect for the onChange callback to avoid blocking UI
+  useScheduledEffect(() => {
+    if (calculationResults && onChange) {
+      onChange(calculationResults);
+      setCalculationResults(null);
+    }
+  }, [calculationResults, onChange]);
+
+  useScheduledEffect(() => {
     handleCalculation();
 
     const cleanups: Array<() => void> = [];
@@ -948,22 +965,25 @@ export const useIntersection = ({
   const [isIntersecting, setIsIntersecting] = React.useState(false);
   const ref = React.useRef(null);
 
-  React.useEffect(() => {
+  // Track intersection changes for scheduling callbacks
+  const [intersectionChanged, setIntersectionChanged] = React.useState<{
+    intersecting: boolean;
+    wasIntersecting: boolean;
+  } | null>(null);
+
+  useScheduledEffect(() => {
     if (!ref.current) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          if (entry.isIntersecting) {
-            if (!isIntersecting) {
-              onInteractionStart?.();
-              setIsIntersecting(true);
-            }
-          } else {
-            if (isIntersecting) {
-              onInteractionEnd?.();
-              setIsIntersecting(false);
-            }
+          const newIntersecting = entry.isIntersecting;
+          if (newIntersecting !== isIntersecting) {
+            setIntersectionChanged({
+              intersecting: newIntersecting,
+              wasIntersecting: isIntersecting,
+            });
+            setIsIntersecting(newIntersecting);
           }
         }
       },
@@ -975,14 +995,20 @@ export const useIntersection = ({
     return () => {
       observer.disconnect();
     };
-  }, [
-    threshold,
-    root,
-    rootMargin,
-    onInteractionStart,
-    onInteractionEnd,
-    isIntersecting,
-  ]);
+  }, [threshold, root, rootMargin, isIntersecting]);
+
+  // Schedule callbacks with low priority since they're typically for analytics or lazy loading
+  useScheduledEffect(() => {
+    if (intersectionChanged) {
+      const { intersecting, wasIntersecting } = intersectionChanged;
+      if (intersecting && !wasIntersecting) {
+        onInteractionStart?.();
+      } else if (!intersecting && wasIntersecting) {
+        onInteractionEnd?.();
+      }
+      setIntersectionChanged(null);
+    }
+  }, [intersectionChanged, onInteractionStart, onInteractionEnd]);
 
   return { ref, isIntersecting };
 };
