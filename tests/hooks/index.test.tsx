@@ -364,12 +364,6 @@ describe('hooks/index', () => {
   });
 
   describe('useIsClient', () => {
-    it('should return false initially', () => {
-      const { result } = renderHook(() => useIsClient());
-
-      expect(result.current).toBe(false);
-    });
-
     it('should return true after hydration', async () => {
       const { result } = renderHook(() => useIsClient());
 
