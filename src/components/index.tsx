@@ -9,4 +9,5 @@ export {
   ResponsiveIndicator,
   ResponsiveIndicator as TailwindIndicator,
 } from './responsive-indicator';
+export { ScrollTracker } from './scroll-tracker';
 export { ScrollableMarker } from './scrollable-marker';

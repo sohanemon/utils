@@ -6,6 +6,7 @@ import { copyToClipboard } from '../functions';
 export * from './action';
 export * from './async';
 export * from './schedule';
+export * from './scroll-tracker';
 
 /**
  * Hook to detect clicks outside of a referenced element.
