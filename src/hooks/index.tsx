@@ -12,6 +12,16 @@ export * from './scroll-tracker';
  * Hook to detect clicks outside of a referenced element.
  * @param callback - A function to invoke when a click outside is detected.
  * @returns A React ref object to attach to the target element.
+ *
+ * @example
+ * ```tsx
+ * const ref = useClickOutside(() => {
+ *   console.log('Clicked outside!');
+ *   setIsOpen(false);
+ * });
+ *
+ * return <div ref={ref}>Click outside me</div>;
+ * ```
  */
 export const useClickOutside = (
   callback: () => void = () => alert('clicked outside'),
@@ -38,6 +48,19 @@ export const useClickOutside = (
  * Hook to match a media query based on Tailwind CSS breakpoints or custom queries.
  * @param tailwindBreakpoint - The Tailwind breakpoint or custom query string.
  * @returns A boolean indicating whether the media query matches.
+ *
+ * @example
+ * ```tsx
+ * const isMobile = useMediaQuery('md'); // false on screens >= 768px
+ * const isLarge = useMediaQuery('lg'); // true on screens >= 1024px
+ * const isDark = useMediaQuery('(prefers-color-scheme: dark)');
+ *
+ * return (
+ *   <div className={isMobile ? 'mobile-layout' : 'desktop-layout'}>
+ *     Content
+ *   </div>
+ * );
+ * ```
  */
 export function useMediaQuery(
   tailwindBreakpoint: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | `(${string})`,
@@ -89,6 +112,14 @@ export function useMediaQuery(
 /**
  * Runs an effect only once when the component mounts.
  * @param effect - The effect callback function.
+ *
+ * @example
+ * ```tsx
+ * useEffectOnce(() => {
+ *   console.log('Component mounted');
+ *   // Initialize something once
+ * });
+ * ```
  */
 export function useEffectOnce(effect: React.EffectCallback): void {
   React.useEffect(effect, []);
@@ -98,6 +129,15 @@ export function useEffectOnce(effect: React.EffectCallback): void {
  * Runs an effect only when dependencies update, excluding the initial render.
  * @param effect - The effect callback function.
  * @param deps - Dependency array for the effect.
+ *
+ * @example
+ * ```tsx
+ * const [count, setCount] = useState(0);
+ *
+ * useUpdateEffect(() => {
+ *   console.log('Count updated:', count);
+ * }, [count]); // Runs only when count changes, not on mount
+ * ```
  */
 export function useUpdateEffect(
   effect: React.EffectCallback,
@@ -120,6 +160,18 @@ export function useUpdateEffect(
  * @param state - The state value to debounce.
  * @param delay - The debounce delay in milliseconds (default: 500ms).
  * @returns The debounced state value.
+ *
+ * @example
+ * ```tsx
+ * const [searchTerm, setSearchTerm] = useState('');
+ * const debouncedSearchTerm = useDebounce(searchTerm, 300);
+ *
+ * useEffect(() => {
+ *   if (debouncedSearchTerm) {
+ *     performSearch(debouncedSearchTerm);
+ *   }
+ * }, [debouncedSearchTerm]);
+ * ```
  */
 export function useDebounce<T>(state: T, delay = 500): T {
   const [debouncedState, setDebouncedState] = React.useState<T>(state);
@@ -137,6 +189,15 @@ export function useDebounce<T>(state: T, delay = 500): T {
 
 /**
  * Hook to handle effects with layout synchronization in the browser.
+ * Uses useLayoutEffect on client, useEffect on server.
+ *
+ * @example
+ * ```tsx
+ * useIsomorphicEffect(() => {
+ *   // This runs after DOM mutations on client, during render on server
+ *   measureElement();
+ * }, [dependencies]);
+ * ```
  */
 export const useIsomorphicEffect =
   typeof window !== 'undefined' ? React.useLayoutEffect : React.useEffect;
@@ -145,6 +206,14 @@ export const useIsomorphicEffect =
  * Hook to invoke a callback after a specified timeout.
  * @param callback - The callback function to invoke.
  * @param delay - The timeout delay in milliseconds (default: 1000ms).
+ *
+ * @example
+ * ```tsx
+ * useTimeout(() => {
+ *   console.log('Timeout triggered');
+ *   setShowMessage(false);
+ * }, 2000);
+ * ```
  */
 export function useTimeout(
   callback: () => void,
@@ -171,6 +240,15 @@ export function useTimeout(
  * @param type - The type of the event to listen for.
  * @param listener - The event listener callback.
  * @param options - Options for the event listener.
+ *
+ * @example
+ * ```tsx
+ * useWindowEvent('resize', () => {
+ *   console.log('Window resized');
+ * });
+ *
+ * useWindowEvent('scroll', handleScroll, { passive: true });
+ * ```
  */
 export function useWindowEvent<K extends keyof WindowEventMap>(
   type: K,
@@ -193,6 +271,15 @@ type SessionStorageValue<T> = [T, React.Dispatch<React.SetStateAction<T>>];
  * @param key - The key for session storage.
  * @param defaultValue - The default value if no value is found in session storage.
  * @returns A tuple of the stored value and an updater function.
+ *
+ * @example
+ * ```tsx
+ * const [user, setUser] = useSessionStorage('user', { name: '', email: '' });
+ *
+ * const handleLogin = (userData) => {
+ *   setUser(userData); // Persists to sessionStorage
+ * };
+ * ```
  */
 export const useSessionStorage = <T extends Record<string, any>>(
   key: string,
@@ -234,6 +321,15 @@ type LocalStorageValue<T> = [T, React.Dispatch<React.SetStateAction<T>>];
  * @param key - The key for local storage.
  * @param defaultValue - The default value if no value is found in local storage.
  * @returns A tuple of the stored value and an updater function.
+ *
+ * @example
+ * ```tsx
+ * const [theme, setTheme] = useLocalStorage('theme', 'light');
+ *
+ * const toggleTheme = () => {
+ *   setTheme(prev => prev === 'light' ? 'dark' : 'light');
+ * };
+ * ```
  */
 export const useLocalStorage = <T extends Record<string, any>>(
   key: string,
@@ -270,6 +366,15 @@ export const useLocalStorage = <T extends Record<string, any>>(
  * @param key - The URL parameter key.
  * @param defaultValue - The default value if the parameter is not present.
  * @returns A tuple of the parameter value and a setter function.
+ *
+ * @example
+ * ```tsx
+ * const [page, setPage] = useUrlParams('page', 1);
+ *
+ * const nextPage = () => {
+ *   setPage(prev => prev + 1); // Updates URL: ?page=2
+ * };
+ * ```
  */
 export const useUrlParams = <T extends string | number | boolean>(
   key: string,
@@ -299,6 +404,17 @@ export const useUrlParams = <T extends string | number | boolean>(
  * Hook to select a DOM element by CSS selector.
  * @param selector - The CSS selector string.
  * @returns The selected DOM element or null if not found.
+ *
+ * @example
+ * ```tsx
+ * const headerElement = useQuerySelector('.header');
+ *
+ * useEffect(() => {
+ *   if (headerElement) {
+ *     headerElement.style.backgroundColor = 'blue';
+ *   }
+ * }, [headerElement]);
+ * ```
  */
 export const useQuerySelector = <T extends Element>(
   selector: string,
@@ -335,6 +451,16 @@ export const useQuerySelector = <T extends Element>(
 /**
  * Hook to detect if the code is running on the client side.
  * @returns A boolean indicating whether the code is running on the client.
+ *
+ * @example
+ * ```tsx
+ * const isClient = useIsClient();
+ *
+ * if (isClient) {
+ *   // Client-side only code
+ *   window.addEventListener('resize', handleResize);
+ * }
+ * ```
  */
 export function useIsClient(): boolean {
   const [isClient, setIsClient] = React.useState(false);
@@ -348,6 +474,17 @@ export function useIsClient(): boolean {
 
 /**
  * Hook to lock scroll by disabling body overflow.
+ *
+ * @example
+ * ```tsx
+ * const [isModalOpen, setIsModalOpen] = useState(false);
+ *
+ * if (isModalOpen) {
+ *   useLockScroll(); // Prevents background scrolling
+ * }
+ *
+ * return <Modal open={isModalOpen} />;
+ * ```
  */
 export function useLockScroll(): void {
   React.useLayoutEffect(() => {
@@ -363,6 +500,17 @@ export function useLockScroll(): void {
  * Hook to copy text to the clipboard and track the copy status.
  * @param timeout - The timeout duration in milliseconds to reset the copy status (default: 2000ms).
  * @returns An object with the `isCopied` state and `copy` function.
+ *
+ * @example
+ * ```tsx
+ * const { isCopied, copy } = useCopyToClipboard();
+ *
+ * return (
+ *   <button onClick={() => copy('Hello World!')}>
+ *     {isCopied ? 'Copied!' : 'Copy Text'}
+ *   </button>
+ * );
+ * ```
  */
 export function useCopyToClipboard({ timeout = 2000 }: { timeout?: number }) {
   const [isCopied, setIsCopied] = React.useState<boolean>(false);
