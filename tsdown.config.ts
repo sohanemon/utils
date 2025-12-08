@@ -12,4 +12,5 @@ export default defineConfig({
     './src/hooks/index.tsx',
     './src/components/index.tsx',
   ],
+  treeshake: true,
 });

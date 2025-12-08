@@ -4,7 +4,7 @@ import { useScheduledEffect } from './schedule';
 
 interface UseScrollTrackerOptions {
   threshold?: number;
-  container?: React.RefObject<HTMLElement | null>;
+  container?: string | React.RefObject<HTMLElement | null>;
 }
 
 interface ScrollTrackerState {
@@ -17,7 +17,6 @@ export const useScrollTracker = ({
   container,
 }: UseScrollTrackerOptions = {}) => {
   const contextContainer = React.useContext(ScrollTrackerContext);
-  const effectiveContainer = container ?? contextContainer;
 
   const [state, setState] = React.useState<ScrollTrackerState>({
     scrolledPast: false,
@@ -28,7 +27,7 @@ export const useScrollTracker = ({
 
   const updateScrollState = (current: number) => {
     const prev = prevScrollRef.current;
-    const newDirection: 'forward' | 'backward' =
+    const newDirection: ScrollTrackerState['direction'] =
       current > prev ? 'forward' : 'backward';
 
     setState({
@@ -40,7 +39,16 @@ export const useScrollTracker = ({
   };
 
   useScheduledEffect(() => {
-    const element = effectiveContainer?.current;
+    let element: HTMLElement | null = null;
+
+    if (typeof container === 'string') {
+      element = document.querySelector(container);
+    } else if (container?.current) {
+      element = container.current;
+    } else if (contextContainer?.current) {
+      element = contextContainer.current;
+    }
+
     const target = element || window;
     const scrollProperty = element ? 'scrollTop' : 'scrollY';
 
@@ -53,7 +61,7 @@ export const useScrollTracker = ({
     handleScroll();
 
     return () => target.removeEventListener('scroll', handleScroll);
-  }, [effectiveContainer, threshold]);
+  }, [container, contextContainer, threshold]);
 
   return state;
 };

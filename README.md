@@ -113,7 +113,7 @@ const throttledFunction = throttle(() => console.log('Throttled!'), 300);
 #### React Hooks
 
 ```typescript
-import { useAsync, useLocalStorage, useMediaQuery, useCopyToClipboard } from '@sohanemon/utils';
+import { useAsync, useLocalStorage, useMediaQuery, useCopyToClipboard, useScrollTracker } from '@sohanemon/utils';
 
 const { data, isLoading } = useAsync(async (signal) => {
   return await fetchData(signal);
@@ -124,6 +124,8 @@ const [value, setValue] = useLocalStorage('key', { count: 0 });
 const isMobile = useMediaQuery('sm');
 
 const { isCopied, copy } = useCopyToClipboard();
+
+const { scrolledPast, direction } = useScrollTracker({ threshold: 300 });
 ```
 
 #### UI Components
@@ -371,6 +373,14 @@ useIsScrolling(): {
 useIsAtTop(options?: { offset?: number }): {
   scrollableContainerRef: React.RefObject<HTMLElement>;
   isAtTop: boolean;
+}
+
+useScrollTracker(options?: {
+  threshold?: number;
+  container?: string | React.RefObject<HTMLElement | null>;
+}): {
+  scrolledPast: boolean;
+  direction: 'forward' | 'backward';
 }
 ```
 
