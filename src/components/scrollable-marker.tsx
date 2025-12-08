@@ -2,6 +2,26 @@
 
 import { useScheduledEffect } from '../hooks/schedule';
 
+/**
+ * A component that automatically marks scrollable elements with a data attribute.
+ *
+ * Monitors the DOM for elements that can scroll and adds `data-scrollable="true"`
+ * attribute to them. Useful for styling scrollable elements or applying scroll-specific behavior.
+ * Uses MutationObserver to handle dynamic content changes.
+ *
+ * @returns null (invisible component that manages scrollable element detection)
+ *
+ * @example
+ * ```tsx
+ * // Include once in your app to mark all scrollable elements
+ * <ScrollableMarker />
+ *
+ * // Then style scrollable elements in CSS
+ * [data-scrollable="true"] {
+ *   border: 1px solid blue;
+ * }
+ * ```
+ */
 export function ScrollableMarker() {
   useScheduledEffect(() => {
     const root = document.body;

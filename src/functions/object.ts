@@ -95,11 +95,22 @@ export function getObjectValue<T, S extends string>(
 ): GetValue<T, SplitPath<S>> | undefined;
 
 /**
- * Implementation of deep object value retrieval with type safety
- * @param obj - Source object
- * @param path - Path specification (string or array)
- * @param defaultValue - Optional fallback value
- * @returns Value at path or default/undefined
+ * Core implementation of getObjectValue with runtime type checking.
+ *
+ * Handles both dot-notation strings and array paths, with support for nested objects and arrays.
+ * Performs validation and safe navigation to prevent runtime errors.
+ *
+ * @param obj - The source object to traverse
+ * @param path - Path as string (dot-separated) or array of keys/indices
+ * @param defaultValue - Value to return if path doesn't exist
+ * @returns The value at the specified path, or defaultValue if not found
+ *
+ * @example
+ * ```ts
+ * getObjectValue({ a: { b: 1 } }, 'a.b') // 1
+ * getObjectValue({ a: [1, 2] }, ['a', 0]) // 1
+ * getObjectValue({}, 'missing.path', 'default') // 'default'
+ * ```
  */
 export function getObjectValue(
   obj: any,
@@ -160,14 +171,32 @@ export function getObjectValue(
  * @returns The same object/function, augmented with the given properties
  *
  * @example
- * // Extend an object
- * const obj = extendProps({ a: 1 }, { b: "hello" });
- * // obj has { a: number; b: string }
+ * ```ts
+ * // Extend a plain object
+ * const config = extendProps({ apiUrl: '/api' }, { timeout: 5000 });
+ * // config has both apiUrl and timeout properties
  *
- * // Extend a function
- * const fn = (x: number) => x * 2;
- * const enhanced = extendProps(fn, { name: "doubler" });
- * // enhanced is callable and also has { name: string }
+ * // Extend a function with metadata
+ * const fetchData = (url: string) => fetch(url).then(r => r.json());
+ * const enhancedFetch = extendProps(fetchData, {
+ *   description: 'Data fetching utility',
+ *   version: '1.0'
+ * });
+ * // enhancedFetch is callable and has description/version properties
+ *
+ * // Create plugin system
+ * const basePlugin = { name: 'base', enabled: true };
+ * const authPlugin = extendProps(basePlugin, {
+ *   authenticate: (token: string) => validateToken(token)
+ * });
+ *
+ * // Build configuration objects
+ * const defaultSettings = { theme: 'light', lang: 'en' };
+ * const userSettings = extendProps(defaultSettings, {
+ *   theme: 'dark',
+ *   notifications: true
+ * });
+ * ```
  */
 export function extendProps<T extends object, P extends object>(
   base: T,

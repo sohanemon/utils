@@ -381,20 +381,38 @@ export function useCopyToClipboard({ timeout = 2000 }: { timeout?: number }) {
 }
 
 /**
- * Properties for height calculation.
+ * Configuration options for height calculation.
  */
 type CalculationProps2 = {
+  /** Array of element IDs whose heights should be considered in calculation. */
   blockIds: string[];
+  /** Whether to recalculate on resize. If string, specifies ID of element to observe for changes. */
   dynamic?: boolean | string;
+  /** Additional margin to add/subtract from calculation. */
   margin?: number;
+  /** Whether to subtract block heights from viewport (true) or add them (false). */
   substract?: boolean;
 };
 
 /**
+ * Hook to calculate available height for an element based on viewport and other element heights.
  *
- * Hook to calculate the height of an element based on viewport and other block heights.
+ * Useful for creating full-height layouts where you need to account for fixed headers,
+ * footers, or other elements that take up vertical space.
+ *
  * @param params - Configuration object for height calculation.
- * @returns The calculated height.
+ * @returns The calculated height in pixels.
+ *
+ * @example
+ * ```tsx
+ * const contentHeight = useHeightCalculation({
+ *   blockIds: ['header', 'footer'],
+ *   margin: 20,
+ *   dynamic: true
+ * });
+ *
+ * return <div style={{ height: contentHeight }}>Content</div>;
+ * ```
  */
 export const useHeightCalculation = ({
   blockIds = [],
@@ -438,13 +456,18 @@ export const useHeightCalculation = ({
 };
 
 /**
- * Properties for DOM calculation.
+ * Configuration options for DOM dimension calculation.
  */
 type CalculationProps = {
+  /** Array of element IDs whose dimensions should be considered. */
   blockIds: string[];
+  /** Whether to recalculate on resize. If string, specifies ID of element to observe. */
   dynamic?: boolean | string;
+  /** Additional margin to add/subtract from calculations. */
   margin?: number;
+  /** Whether to subtract block dimensions from viewport (true) or add them (false). */
   substract?: boolean;
+  /** Callback fired whenever dimensions change with detailed results. */
   onChange?: (results: {
     blocksHeight: number;
     blocksWidth: number;
@@ -454,9 +477,27 @@ type CalculationProps = {
 };
 
 /**
- * Hook to calculate dimensions (height and width) of an element based on viewport and other block dimensions.
+ * Hook to calculate available dimensions for an element based on viewport and other element dimensions.
+ *
+ * Provides both height and width calculations with optional change callbacks.
+ * Useful for responsive layouts that need to adapt to dynamic content or viewport changes.
+ *
  * @param params - Configuration object for dimension calculation.
- * @returns An object containing the calculated height and width.
+ * @returns An object containing the calculated height and width in pixels.
+ *
+ * @example
+ * ```tsx
+ * const { height, width } = useDomCalculation({
+ *   blockIds: ['sidebar', 'header'],
+ *   margin: 10,
+ *   dynamic: true,
+ *   onChange: ({ remainingWidth, remainingHeight }) => {
+ *     console.log(`Available: ${remainingWidth}x${remainingHeight}`);
+ *   }
+ * });
+ *
+ * return <div style={{ height, width }}>Responsive content</div>;
+ * ```
  */
 export const useDomCalculation = ({
   blockIds = [],
@@ -584,8 +625,27 @@ export const useDomCalculation = ({
 };
 
 /**
- * Hook to detect if the user is scrolling.
- * @returns An object containing the isScrolling state and a ref to the scrollable container.
+ * Hook to detect if the user is currently scrolling within a container.
+ *
+ * Tracks scroll events and provides a debounced "is scrolling" state that
+ * becomes false 150ms after the last scroll event. Useful for showing/hiding
+ * scroll indicators, triggering animations, or optimizing performance during scroll.
+ *
+ * @returns An object containing:
+ * - `isScrolling`: Boolean indicating if scrolling is currently active
+ * - `scrollableContainerRef`: Ref to attach to the scrollable element
+ *
+ * @example
+ * ```tsx
+ * const { isScrolling, scrollableContainerRef } = useIsScrolling();
+ *
+ * return (
+ *   <div ref={scrollableContainerRef}>
+ *     {isScrolling && <ScrollIndicator />}
+ *     <Content />
+ *   </div>
+ * );
+ * ```
  */
 
 export const useIsScrolling = () => {
@@ -630,8 +690,28 @@ export const useIsScrolling = () => {
 };
 
 /**
- * Hook to detect if the user is at the top of the page.
- * @returns An object containing the isAtTop state and a ref to the scrollable container.
+ * Hook to detect if the scroll position is at the top of a container.
+ *
+ * Monitors scroll position and determines if the user has scrolled past
+ * a threshold from the top. Useful for sticky headers, navigation states,
+ * or triggering actions when reaching the top of content.
+ *
+ * @param offset - Optional offset in pixels from the top to consider as "at top" (default: 10).
+ * @returns An object containing:
+ * - `isAtTop`: Boolean indicating if scroll position is at the top
+ * - `scrollableContainerRef`: Ref to attach to the scrollable element
+ *
+ * @example
+ * ```tsx
+ * const { isAtTop, scrollableContainerRef } = useIsAtTop({ offset: 50 });
+ *
+ * return (
+ *   <div ref={scrollableContainerRef}>
+ *     <Header className={isAtTop ? 'transparent' : 'solid'} />
+ *     <Content />
+ *   </div>
+ * );
+ * ```
  */
 
 export const useIsAtTop = ({ offset }: { offset?: number } = {}) => {
@@ -667,8 +747,20 @@ interface UseIntersectionOptions extends IntersectionObserverInit {
 }
 
 /**
- * React hook that tracks when an element enters or leaves the viewport
- * using the Intersection Observer API.
+ * React hook that tracks when an element enters or leaves the viewport using the Intersection Observer API.
+ *
+ * Provides efficient viewport detection for lazy loading, animations, analytics,
+ * and other effects that should trigger based on element visibility.
+ *
+ * @param options - Configuration for the intersection observer.
+ * @param options.threshold - How much of the element must be visible (0-1) to trigger intersection.
+ * @param options.root - The element to use as the viewport for checking visibility.
+ * @param options.rootMargin - Margin around the root element for intersection calculation.
+ * @param options.onInteractionStart - Callback when element enters viewport.
+ * @param options.onInteractionEnd - Callback when element leaves viewport.
+ * @returns Object containing:
+ * - `ref`: React ref to attach to the observed element.
+ * - `isIntersecting`: Whether the element is currently visible in the viewport.
  *
  * @example
  * ```tsx
@@ -678,13 +770,12 @@ interface UseIntersectionOptions extends IntersectionObserverInit {
  *   onInteractionEnd: () => console.log('🙈 Element left viewport'),
  * });
  *
- * return <div ref={ref}>Watch me</div>;
+ * return (
+ *   <div ref={ref} className={isIntersecting ? 'visible' : 'hidden'}>
+ *     Watch me fade in/out
+ *   </div>
+ * );
  * ```
- *
- * @param options - Configuration for the intersection observer.
- * @returns Object containing:
- * - `ref`: React ref to attach to the observed element.
- * - `isIntersecting`: Whether the element is currently visible.
  */
 
 export const useIntersection = ({

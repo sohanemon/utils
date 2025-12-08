@@ -57,20 +57,52 @@ type TMerged<T> = [T] extends [Array<any>]
  * @returns The merged object with proper typing
  *
  * @example
- * // Basic merge
+ * // Basic shallow merge
  * deepmerge({ a: 1 }, { b: 2 }) // { a: 1, b: 2 }
  *
  * @example
- * // Nested merge
- * deepmerge({ a: { x: 1 } }, { a: { y: 2 } }) // { a: { x: 1, y: 2 } }
+ * // Deep merge of nested objects
+ * deepmerge({ user: { name: 'John' } }, { user: { age: 30 } })
+ * // { user: { name: 'John', age: 30 } }
  *
  * @example
- * // Array concat
- * deepmerge({ arr: [1] }, { arr: [2] }, { arrayMerge: 'concat' }) // { arr: [1, 2] }
+ * // Array concatenation
+ * deepmerge({ tags: ['react'] }, { tags: ['typescript'] }, { arrayMerge: 'concat' })
+ * // { tags: ['react', 'typescript'] }
  *
  * @example
- * // Sources with extra properties
- * deepmerge({ a: 1 }, { b: 2, c: 3 }) // { a: 1, b: 2, c: 3 }
+ * // Array replacement (default)
+ * deepmerge({ items: [1, 2] }, { items: [3, 4] })
+ * // { items: [3, 4] }
+ *
+ * @example
+ * // Custom array merging
+ * deepmerge(
+ *   { scores: [85, 90] },
+ *   { scores: [95] },
+ *   { arrayMerge: (target, source) => [...target, ...source] }
+ * )
+ * // { scores: [85, 90, 95] }
+ *
+ * @example
+ * // Configuration merging
+ * const defaultConfig = { theme: 'light', features: { darkMode: false } };
+ * const userConfig = { theme: 'dark', features: { darkMode: true, animations: true } };
+ * deepmerge(defaultConfig, userConfig);
+ * // { theme: 'dark', features: { darkMode: true, animations: true } }
+ *
+ * @example
+ * // State updates in reducers
+ * const initialState = { user: { profile: { name: '' } }, settings: {} };
+ * const action = { user: { profile: { name: 'Alice' } }, settings: { theme: 'dark' } };
+ * const newState = deepmerge(initialState, action);
+ *
+ * @example
+ * // Merging API responses
+ * const cachedData = { posts: [{ id: 1, title: 'Old' }] };
+ * const freshData = { posts: [{ id: 1, title: 'Updated', author: 'Bob' }] };
+ * deepmerge(cachedData, freshData);
+ * // { posts: [{ id: 1, title: 'Updated', author: 'Bob' }] }
  */
 export function deepmerge<
   T extends Record<string, any>,

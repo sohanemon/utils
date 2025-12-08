@@ -7,6 +7,12 @@ import { twMerge } from 'tailwind-merge';
  *
  * @param {...ClassValue[]} inputs - Class names to merge.
  * @returns {string} - A string of merged class names.
+ *
+ * @example
+ * ```ts
+ * cn('px-2 py-1', 'bg-red-500') // 'px-2 py-1 bg-red-500'
+ * cn('px-2', 'px-4') // 'px-4' (Tailwind resolves conflicts)
+ * ```
  */
 export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
@@ -20,6 +26,12 @@ export function cn(...inputs: ClassValue[]): string {
  * @param  href - The target URL.
  * @param  path - The current browser path.
  * @returns - True if the navigation is active, false otherwise.
+ *
+ * @example
+ * ```ts
+ * isNavActive('/about', '/about/team') // true
+ * isNavActive('/contact', '/about') // false
+ * ```
  */
 export function isNavActive(href: string, path: string): boolean {
   console.warn('isNavActive is deprecated. Use isLinkActive instead.');
@@ -30,11 +42,29 @@ export function isNavActive(href: string, path: string): boolean {
 /**
  * Checks if a link is active, considering optional localization prefixes.
  *
- * @param {Object} params - Parameters object.
- * @param {string} params.path - The target path of the link.
- * @param {string} params.currentPath - The current browser path.
- * @param {string[]} [params.locales=['en', 'es', 'de', 'zh', 'bn', 'fr', 'it', 'nl']] - Supported locale prefixes.
- * @returns {boolean} - True if the link is active, false otherwise.
+ * Compares paths while ignoring locale prefixes (e.g., /en/, /fr/) for consistent
+ * navigation highlighting across different language versions of the same page.
+ *
+ * @param params - Parameters object.
+ * @param params.path - The target path of the link.
+ * @param params.currentPath - The current browser path.
+ * @param params.locales - Supported locale prefixes to ignore during comparison.
+ * @param params.exact - Whether to require exact path match (default: true). If false, checks if current path starts with target path.
+ * @returns True if the link is active, false otherwise.
+ *
+ * @example
+ * ```ts
+ * // Exact match
+ * isLinkActive({ path: '/about', currentPath: '/about' }) // true
+ * isLinkActive({ path: '/about', currentPath: '/about/team' }) // false
+ *
+ * // With locales
+ * isLinkActive({ path: '/about', currentPath: '/en/about' }) // true
+ * isLinkActive({ path: '/about', currentPath: '/fr/about' }) // true
+ *
+ * // Partial match
+ * isLinkActive({ path: '/blog', currentPath: '/blog/post-1', exact: false }) // true
+ * ```
  */
 export function isLinkActive({
   path,
@@ -65,8 +95,18 @@ export function isLinkActive({
 /**
  * Cleans a file path by removing the `/public/` prefix if present.
  *
- * @param  src - The source path to clean.
- * @returns - The cleaned path.
+ * Useful when working with static assets that may have been processed
+ * or when normalizing paths between development and production environments.
+ *
+ * @param src - The source path to clean.
+ * @returns The cleaned path with `/public/` prefix removed and whitespace trimmed.
+ *
+ * @example
+ * ```ts
+ * cleanSrc('/public/images/logo.png') // '/images/logo.png'
+ * cleanSrc('images/logo.png') // 'images/logo.png'
+ * cleanSrc('  /public/docs/readme.md  ') // '/docs/readme.md'
+ * ```
  */
 export function cleanSrc(src: string) {
   let cleanedSrc = src;
@@ -80,8 +120,20 @@ export function cleanSrc(src: string) {
 /**
  * Smoothly scrolls to the top or bottom of a specified container.
  *
- * @param  containerSelector - The CSS selector or React ref for the container.
- * @param  to - Specifies whether to scroll to the top or bottom.
+ * Provides smooth scrolling animation to either end of a scrollable element.
+ * Accepts either a CSS selector string or a React ref to the container element.
+ *
+ * @param containerSelector - The CSS selector string or React ref for the scrollable container.
+ * @param to - Direction to scroll: 'top' for top of container, 'bottom' for bottom.
+ *
+ * @example
+ * ```ts
+ * // Scroll to top using selector
+ * scrollTo('.main-content', 'top');
+ *
+ * // Scroll to bottom using ref
+ * scrollTo(containerRef, 'bottom');
+ * ```
  */
 export const scrollTo = (
   containerSelector: string | React.RefObject<HTMLDivElement>,
@@ -106,10 +158,20 @@ export const scrollTo = (
 };
 
 /**
- * Copies a given string to the clipboard.
+ * Copies a given string to the clipboard using the modern Clipboard API.
  *
- * @param  value - The value to copy to the clipboard.
- * @param  [onSuccess=() => {}] - Optional callback executed after successful copy.
+ * Safely attempts to copy text to the user's clipboard. Falls back gracefully
+ * if the Clipboard API is not available or if the operation fails.
+ *
+ * @param value - The text value to copy to the clipboard.
+ * @param onSuccess - Optional callback executed after successful copy operation.
+ *
+ * @example
+ * ```ts
+ * copyToClipboard('Hello World!', () => {
+ *   console.log('Text copied successfully');
+ * });
+ * ```
  */
 export const copyToClipboard = (value: string, onSuccess = () => {}) => {
   if (typeof window === 'undefined' || !navigator.clipboard?.writeText) {
@@ -124,10 +186,23 @@ export const copyToClipboard = (value: string, onSuccess = () => {}) => {
 };
 
 /**
- * Converts camelCase, PascalCase, kebab-case, snake_case into normal case.
+ * Converts various case styles (camelCase, PascalCase, kebab-case, snake_case) into readable normal case.
  *
- * @param  inputString - The string need to be converted into normal case
- * @returns - Normal Case
+ * Transforms technical naming conventions into human-readable titles by:
+ * - Adding spaces between words
+ * - Capitalizing the first letter of each word
+ * - Handling common separators (-, _, camelCase boundaries)
+ *
+ * @param inputString - The string to convert (supports camelCase, PascalCase, kebab-case, snake_case).
+ * @returns The converted string in normal case (title case).
+ *
+ * @example
+ * ```ts
+ * convertToNormalCase('camelCase') // 'Camel Case'
+ * convertToNormalCase('kebab-case') // 'Kebab Case'
+ * convertToNormalCase('snake_case') // 'Snake Case'
+ * convertToNormalCase('PascalCase') // 'Pascal Case'
+ * ```
  */
 export function convertToNormalCase(inputString: string) {
   const splittedString = inputString.split('.').pop();
@@ -186,6 +261,17 @@ export const convertToSlug = (str: string): string => {
  * Checks if the code is running in a server-side environment.
  *
  * @returns - True if the code is executed in SSR (Server-Side Rendering) context, false otherwise
+ *
+ * @example
+ * ```ts
+ * if (isSSR) {
+ *   // Server-side only code
+ *   console.log('Running on server');
+ * } else {
+ *   // Client-side only code
+ *   window.addEventListener('load', () => {});
+ * }
+ * ```
  */
 export const isSSR = typeof window === 'undefined';
 
@@ -194,6 +280,13 @@ export const isSSR = typeof window === 'undefined';
  *
  * @param str - The SVG string to encode
  * @returns - Base64-encoded string representation of the SVG
+ *
+ * @example
+ * ```ts
+ * const svg = '<svg><circle cx="50" cy="50" r="40"/></svg>';
+ * const base64 = svgToBase64(svg);
+ * // Use in data URL: `data:image/svg+xml;base64,${base64}`
+ * ```
  */
 export const svgToBase64 = (str: string) =>
   isSSR ? Buffer.from(str).toString('base64') : window.btoa(str);
@@ -262,9 +355,23 @@ type DebouncedFunction<F extends (...args: any[]) => any> = {
  * @throws {RangeError} If the `wait` parameter is negative.
  *
  * @example
+ * ```ts
+ * // Basic debouncing
  * const log = debounce((message: string) => console.log(message), 200);
  * log('Hello'); // Logs "Hello" after 200ms if no other call is made.
  * console.log(log.isPending); // true if the timer is active.
+ *
+ * // Immediate execution
+ * const save = debounce(() => saveToServer(), 500, { immediate: true });
+ * save(); // Executes immediately, then waits 500ms for subsequent calls
+ *
+ * // Check pending state
+ * const debouncedSearch = debounce(searchAPI, 300);
+ * debouncedSearch('query');
+ * if (debouncedSearch.isPending) {
+ *   showLoadingIndicator();
+ * }
+ * ```
  */
 export function debounce<F extends (...args: any[]) => any>(
   function_: F,
@@ -354,9 +461,29 @@ type ThrottledFunction<F extends (...args: any[]) => any> = {
  * @throws {RangeError} If the `wait` parameter is negative.
  *
  * @example
+ * ```ts
+ * // Basic throttling (leading edge by default)
  * const log = throttle((message: string) => console.log(message), 200);
- * log('Hello'); // Logs "Hello" immediately if leading is true.
- * console.log(log.isPending); // true if the timer is active.
+ * log('Hello'); // Logs "Hello" immediately
+ * log('World'); // Ignored for 200ms
+ * console.log(log.isPending); // true if within throttle window
+ *
+ * // Trailing edge only
+ * const trailingLog = throttle(() => console.log('trailing'), 200, {
+ *   leading: false,
+ *   trailing: true
+ * });
+ * trailingLog(); // No immediate execution
+ * // After 200ms: logs "trailing"
+ *
+ * // Both edges
+ * const bothLog = throttle(() => console.log('both'), 200, {
+ *   leading: true,
+ *   trailing: true
+ * });
+ * bothLog(); // Immediate execution
+ * // After 200ms: executes again if called during window
+ * ```
  */
 export function throttle<F extends (...args: any[]) => any>(
   function_: F,
@@ -432,26 +559,31 @@ export function throttle<F extends (...args: any[]) => any>(
 
 /**
  * Formats a string by replacing each '%s' placeholder with the corresponding argument.
- * This function mimics the basic behavior of C's printf for %s substitution.
  *
- * It supports both calls like `printf(format, ...args)` and `printf(format, argsArray)`.
+ * Mimics the basic behavior of C's printf for %s substitution. Supports both
+ * variadic arguments and array-based argument passing. Extra placeholders
+ * are left as-is, missing arguments result in empty strings.
  *
  * @param format - The format string containing '%s' placeholders.
- * @param args - The values to substitute into the placeholders, either as separate arguments or as a single array.
- * @returns The formatted string with all '%s' replaced by the provided arguments.
+ * @param args - The values to substitute, either as separate arguments or a single array.
+ * @returns The formatted string with placeholders replaced by arguments.
  *
  * @example
  * ```ts
- * const message = printf("%s love %s", "I", "Bangladesh");
- * // message === "I love Bangladesh"
+ * // Basic usage with separate arguments
+ * printf("%s love %s", "I", "Bangladesh") // "I love Bangladesh"
  *
- * const arr = ["I", "Bangladesh"];
- * const message2 = printf("%s love %s", arr);
- * // message2 === "I love Bangladesh"
+ * // Using array of arguments
+ * printf("%s love %s", ["I", "Bangladesh"]) // "I love Bangladesh"
  *
- * // If there are too few arguments:
- * const incomplete = printf("Bangladesh is %s %s", "beautiful");
- * // incomplete === "Bangladesh is beautiful"
+ * // Extra placeholders remain unchanged
+ * printf("%s %s %s", "Hello", "World") // "Hello World %s"
+ *
+ * // Missing arguments become empty strings
+ * printf("%s and %s", "this") // "this and "
+ *
+ * // Multiple occurrences
+ * printf("%s %s %s", "repeat", "repeat", "repeat") // "repeat repeat repeat"
  * ```
  */
 export function printf(format: string, ...args: unknown[]): string {
@@ -469,8 +601,19 @@ export function printf(format: string, ...args: unknown[]): string {
  * Merges multiple refs into a single ref callback.
  *
  * @param refs - An array of refs to merge.
- *
  * @returns - A function that updates the merged ref with the provided value.
+ *
+ * @example
+ * ```tsx
+ * const MyComponent = () => {
+ *   const ref1 = useRef<HTMLDivElement>(null);
+ *   const ref2 = useRef<HTMLDivElement>(null);
+ *
+ *   const mergedRef = mergeRefs(ref1, ref2);
+ *
+ *   return <div ref={mergedRef}>Content</div>;
+ * };
+ * ```
  */
 
 export type MergeRefs = <T>(
@@ -492,12 +635,22 @@ export const mergeRefs: MergeRefs = <T>(...refs: any[]) => {
 };
 
 /**
- * Navigates to the specified client-side hash without ssr.
- * use `scroll-margin-top` with css to add margins
+ * Navigates to the specified client-side hash without triggering SSR.
  *
- * @param id - The ID of the element without # to navigate to.
+ * Smoothly scrolls to an element by ID and updates the URL hash.
+ * Use `scroll-margin-top` CSS property to add margins for fixed headers.
  *
- * @example goToClientSideHash('my-element');
+ * @param id - The ID of the element (without #) to navigate to.
+ * @param opts - Additional options for scrollIntoView.
+ *
+ * @example
+ * ```ts
+ * // Navigate to an element
+ * goToClientSideHash('section-about');
+ *
+ * // With custom scroll behavior
+ * goToClientSideHash('contact', { behavior: 'auto', block: 'center' });
+ * ```
  */
 
 export function goToClientSideHash(id: string, opts?: ScrollIntoViewOptions) {
@@ -512,11 +665,15 @@ export function goToClientSideHash(id: string, opts?: ScrollIntoViewOptions) {
  * Escapes a string for use in a regular expression.
  *
  * @param str - The string to escape
- * @returns - The escaped string
+ * @returns - The escaped string safe for use in RegExp constructor
  *
  * @example
+ * ```ts
  * const escapedString = escapeRegExp('Hello, world!');
  * // escapedString === 'Hello\\, world!'
+ *
+ * const regex = new RegExp(escapeRegExp(userInput));
+ * ```
  */
 
 export function escapeRegExp(str: string): string {
@@ -536,6 +693,13 @@ export function escapeRegExp(str: string): string {
  * @param options.removeAccents - Whether to remove diacritic marks like accents (default: true)
  * @param options.removeNonAlphanumeric - Whether to trim non-alphanumeric characters from the edges (default: true)
  * @returns The normalized string
+ *
+ * @example
+ * ```ts
+ * normalizeText('Café') // 'cafe'
+ * normalizeText('  Hello!  ') // 'hello'
+ * normalizeText('José', { removeAccents: false }) // 'josé'
+ * ```
  */
 export function normalizeText(
   str?: string | null,

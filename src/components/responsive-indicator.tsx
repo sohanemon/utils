@@ -4,12 +4,36 @@ import { isSSR } from '../functions';
 
 type Side = 'bottom-left' | 'bottom-right' | 'top-right' | 'top-left';
 
+/**
+ * Props for the ResponsiveIndicator component.
+ */
 interface ResponsiveIndicatorProps {
+  /** The corner position of the indicator. Defaults to 'bottom-left'. */
   side?: Side;
+  /** Offset from the corner in the specified unit. Defaults to 2. */
   offset?: number;
+  /** Unit for the offset. Defaults to 'px'. */
   unit?: 'px' | 'rem';
 }
 
+/**
+ * A development-only component that displays the current Tailwind CSS breakpoint.
+ *
+ * Shows the current viewport size as a small indicator in one of the corners.
+ * Automatically hides in production builds. Useful for responsive development.
+ *
+ * @param props - The component props
+ * @returns A positioned indicator showing current breakpoint, or null in production
+ *
+ * @example
+ * ```tsx
+ * // Shows current breakpoint in bottom-left corner
+ * <ResponsiveIndicator />
+ *
+ * // Shows in top-right with custom offset
+ * <ResponsiveIndicator side="top-right" offset={1} unit="rem" />
+ * ```
+ */
 export const ResponsiveIndicator: React.FC<ResponsiveIndicatorProps> = ({
   side,
   offset = 2,
@@ -25,6 +49,9 @@ export const ResponsiveIndicator: React.FC<ResponsiveIndicatorProps> = ({
     'top-right',
     'top-left',
   ] as const;
+  /**
+   * Possible positions for the responsive indicator.
+   */
   type Side = 'bottom-left' | 'bottom-right' | 'top-right' | 'top-left';
 
   const sideStyles: Record<Side, (offset: number) => React.CSSProperties> = {

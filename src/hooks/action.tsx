@@ -1,15 +1,56 @@
 import * as React from 'react';
 import { useIsomorphicEffect } from '.';
 
+/**
+ * Type definition for an action function that takes input and returns a promise.
+ */
 type ActionType<Input, Result> = (input: Input) => Promise<Result>;
+/**
+ * Possible states for the action execution.
+ */
 type Status = 'idle' | 'loading' | 'success' | 'error';
 
+/**
+ * Options for configuring the useAction hook behavior.
+ */
 interface UseActionOptions<_Input, Result> {
+  /** Callback executed when the action succeeds. */
   onSuccess?: (data: Result) => void;
+  /** Callback executed when the action fails. */
   onError?: (error: Error) => void;
+  /** Callback executed when the action completes (success or failure). */
   onSettled?: () => void;
 }
 
+/**
+ * Hook for managing async actions with loading states and callbacks.
+ *
+ * Provides a clean API for executing async operations with built-in state management,
+ * error handling, and lifecycle callbacks. Supports both synchronous and asynchronous consumption.
+ *
+ * @template Input - The type of input the action accepts
+ * @template Result - The type of result the action returns
+ * @param action - The async function to execute
+ * @param options - Configuration options for callbacks
+ * @returns Object with execution methods, state, and data
+ *
+ * @example
+ * ```tsx
+ * const { execute, isLoading, data, error } = useAction(
+ *   async (userId: string) => {
+ *     const user = await fetchUser(userId);
+ *     return user;
+ *   },
+ *   {
+ *     onSuccess: (user) => console.log('User loaded:', user),
+ *     onError: (err) => console.error('Failed to load user:', err),
+ *   }
+ * );
+ *
+ * // Execute the action
+ * const handleClick = () => execute('user123');
+ * ```
+ */
 export const useAction = <Input, Result>(
   action: ActionType<Input, Result>,
   options?: UseActionOptions<Input, Result>,

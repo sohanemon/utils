@@ -26,10 +26,51 @@ import { sleep } from './utils';
  *
  * @example
  * ```ts
+ * // Poll for job completion
  * const job = await poll(async () => {
  *   const status = await getJobStatus();
  *   return status === 'done' ? status : null;
  * }, { interval: 3000, timeout: 60000 });
+ * ```
+ *
+ * @example
+ * ```ts
+ * // Wait for API endpoint to be ready
+ * const apiReady = await poll(async () => {
+ *   try {
+ *     await fetch('/api/health');
+ *     return true;
+ *   } catch {
+ *     return null;
+ *   }
+ * }, { interval: 1000, timeout: 30000 });
+ * ```
+ *
+ * @example
+ * ```ts
+ * // Poll with abort signal for cancellation
+ * const controller = new AbortController();
+ * setTimeout(() => controller.abort(), 10000); // Cancel after 10s
+ *
+ * try {
+ *   const result = await poll(
+ *     () => checkExternalService(),
+ *     { interval: 2000, signal: controller.signal }
+ *   );
+ * } catch (err) {
+ *   if (err.name === 'AbortError') {
+ *     console.log('Polling was cancelled');
+ *   }
+ * }
+ * ```
+ *
+ * @example
+ * ```ts
+ * // Poll for user action completion
+ * const userConfirmed = await poll(async () => {
+ *   const confirmations = await getPendingConfirmations();
+ *   return confirmations.length > 0 ? confirmations[0] : null;
+ * }, { interval: 5000, timeout: 300000 }); // 5 min timeout
  * ```
  */
 export async function poll<T>(
