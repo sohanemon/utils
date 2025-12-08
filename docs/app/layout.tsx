@@ -1,16 +1,17 @@
-import { Footer, Layout, Navbar } from 'nextra-theme-docs';
+import { Layout, Navbar } from 'nextra-theme-docs';
 import { Banner } from 'nextra/components';
 import { getPageMap } from 'nextra/page-map';
 import 'nextra-theme-docs/style.css';
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = {};
+export const metadata: Metadata = {
+  title: 'Utils Doc',
+};
 
 const banner = (
-  <Banner storageKey="some-key">@sohanemon/utils 6.3 is released 🎉</Banner>
+  <Banner storageKey="some-key">@sohanemon/utils 6.3.7 is released 🎉</Banner>
 );
 const navbar = <Navbar logo={<b>Utils</b>} />;
-const footer = <Footer>MIT {new Date().getFullYear()} © Utils.</Footer>;
 
 export default async function RootLayout({
   children,
@@ -25,7 +26,6 @@ export default async function RootLayout({
           navbar={navbar}
           pageMap={await getPageMap()}
           docsRepositoryBase="https://github.com/sohanemon/utils/tree/main/docs"
-          footer={footer}
         >
           {children}
         </Layout>
