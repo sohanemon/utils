@@ -1,0 +1,35 @@
+import { Footer, Layout, Navbar } from 'nextra-theme-docs';
+import { Banner } from 'nextra/components';
+import { getPageMap } from 'nextra/page-map';
+import 'nextra-theme-docs/style.css';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {};
+
+const banner = (
+  <Banner storageKey="some-key">@sohanemon/utils 6.3 is released 🎉</Banner>
+);
+const navbar = <Navbar logo={<b>Utils</b>} />;
+const footer = <Footer>MIT {new Date().getFullYear()} © Utils.</Footer>;
+
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en" dir="ltr" suppressHydrationWarning>
+      <body>
+        <Layout
+          banner={banner}
+          navbar={navbar}
+          pageMap={await getPageMap()}
+          docsRepositoryBase="https://github.com/sohanemon/utils/tree/main/docs"
+          footer={footer}
+        >
+          {children}
+        </Layout>
+      </body>
+    </html>
+  );
+}

@@ -34,4 +34,4 @@ yarn-error.log*
 .env
 bun.lockb
 pnpm-lock.yaml
-site/.next/dev
+**/.next/
