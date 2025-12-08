@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useIsomorphicEffect } from '.';
+import { useScheduledEffect } from './schedule';
 
 /**
  * Type definition for an action function that takes input and returns a promise.
@@ -138,7 +138,7 @@ export const useAction = <Input, Result>(
 
   // Hook to execute the action automatically on mount
   const useExecute = (input: Input) => {
-    useIsomorphicEffect(() => {
+    useScheduledEffect(() => {
       execute(input);
     }, []);
   };

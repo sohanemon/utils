@@ -1,7 +1,7 @@
 import * as React from 'react';
 import type { ScheduleOpts } from '../functions';
-import { schedule as _schedule } from '../functions/schedule';
 import type { Task } from '../functions/schedule';
+import { schedule as _schedule } from '../functions/schedule';
 
 /**
  * useSchedule — run non-urgent work later, without blocking UI.
