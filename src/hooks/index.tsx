@@ -7,6 +7,7 @@ export * from './action';
 export * from './async';
 export * from './schedule';
 export * from './scroll-tracker';
+export * from './worker';
 
 import { useScheduledEffect } from './schedule';
 
