@@ -8,6 +8,8 @@ export * from './async';
 export * from './schedule';
 export * from './scroll-tracker';
 
+import { useScheduledEffect } from './schedule';
+
 /**
  * Hook to detect clicks outside of a referenced element.
  * @param callback - A function to invoke when a click outside is detected.
@@ -97,7 +99,7 @@ export function useMediaQuery(
     setMatches(getMatches(parsedQuery));
   };
 
-  useIsomorphicEffect(() => {
+  useScheduledEffect(() => {
     const matchMedia = window.matchMedia(parsedQuery);
     handleChange();
     matchMedia.addEventListener('change', handleChange);
@@ -220,7 +222,7 @@ export function useTimeout(
   delay: number | null = 1000,
 ): void {
   const savedCallback = React.useRef(callback);
-  useIsomorphicEffect(() => {
+  useScheduledEffect(() => {
     savedCallback.current = callback;
   }, [callback]);
 
@@ -427,7 +429,7 @@ export const useQuerySelector = <T extends Element>(
   const [element, setElement] = React.useState<T | null>(null);
   const elementRef = React.useRef<T | null>(null);
 
-  React.useLayoutEffect(() => {
+  React.useEffect(() => {
     let referenceElement: T | null = null;
 
     if (typeof selector === 'string') {
@@ -594,7 +596,7 @@ export const useHeightCalculation = ({
     setTableHeight(height);
   };
 
-  useIsomorphicEffect(() => {
+  React.useEffect(() => {
     handleResize();
     if (!dynamic) return;
 
@@ -711,7 +713,7 @@ export const useDomCalculation = ({
     });
   }, [blockIds, margin, substract, onChange]);
 
-  useIsomorphicEffect(() => {
+  React.useEffect(() => {
     handleCalculation();
 
     const cleanups: Array<() => void> = [];

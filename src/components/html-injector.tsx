@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { cn } from '../functions';
+import { useScheduledEffect } from '../hooks/schedule';
 
 /**
  * Props for the HtmlInjector component
@@ -65,7 +66,7 @@ export function HtmlInjector({
   const injectedScriptsRef = React.useRef<HTMLScriptElement[]>([]);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  React.useEffect(() => {
+  useScheduledEffect(() => {
     // NOTE: Cleanup previously injected scripts
     injectedScriptsRef.current.forEach((script) => {
       if (script.parentNode) {
