@@ -80,6 +80,14 @@ const cleaned = hydrate({ a: null, b: { c: null } }); // { a: undefined, b: { c:
 const merged = deepmerge({ user: { name: 'John' } }, { user: { age: 30 } });
 // { user: { name: 'John', age: 30 } }
 
+// Compose functions automatically
+const composed = deepmerge(
+  { onFinish() { console.log('first') } },
+  { onFinish() { console.log('second') } },
+  { functionMerge: 'compose' }
+);
+// composed.onFinish() logs 'first' then 'second'
+
 // Merge functions with custom logic
 const combined = deepmerge(
   { onFinish() { console.log('first') } },
@@ -219,12 +227,7 @@ deepmerge<T extends Record<string, any>, S extends Record<string, any>[]>(
 deepmerge<T extends Record<string, any>, S extends Record<string, any>[]>(
   target: T,
   sources: S,
-  options?: {
-    arrayMerge?: 'replace' | 'concat' | 'merge' | ((target: any[], source: any[]) => any[]);
-    clone?: boolean;
-    customMerge?: (key: string | symbol, targetValue: any, sourceValue: any) => any;
-    maxDepth?: number;
-  }
+  options?: DeepMergeOptions
 ): TMerged<T | S[number]>
 
 convertToSlug(str: string): string
@@ -484,6 +487,13 @@ TwoOf<T>: Union of two property objects
 Prettify<T>: Clean type representation
 NestedKeyOf<T>: All nested keys as strings
 Without<T, U>: T without U keys
+DeepMergeOptions: {
+  arrayMerge?: 'replace' | 'concat' | 'merge' | ((target: any[], source: any[]) => any[]);
+  clone?: boolean;
+  customMerge?: (key: string | symbol, targetValue: any, sourceValue: any) => any;
+  functionMerge?: 'replace' | 'compose';
+  maxDepth?: number;
+}
 ```
 
 #### Type Guards & Primitives

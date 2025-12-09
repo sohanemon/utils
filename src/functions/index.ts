@@ -6,4 +6,4 @@ export * from './poll';
 export * from './schedule';
 export * from './shield';
 export * from './utils';
-export * from './worker';
+export { workerize } from './worker';

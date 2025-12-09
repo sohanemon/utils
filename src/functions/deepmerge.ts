@@ -25,6 +25,22 @@ type TPrimitives =
   | Date
   | TFunction;
 
+export type DeepMergeOptions = {
+  arrayMerge?:
+    | 'replace'
+    | 'concat'
+    | 'merge'
+    | ((target: any[], source: any[]) => any[]);
+  clone?: boolean;
+  customMerge?: (
+    key: string | symbol,
+    targetValue: any,
+    sourceValue: any,
+  ) => any;
+  functionMerge?: 'replace' | 'compose';
+  maxDepth?: number;
+};
+
 type TMerged<T> = [T] extends [Array<any>]
   ? { [K in keyof T]: TMerged<T[K]> }
   : [T] extends [TPrimitives]
@@ -119,41 +135,13 @@ export function deepmerge<
 export function deepmerge<
   T extends Record<string, any>,
   S extends Record<string, any>[],
->(
-  target: T,
-  sources: S,
-  options?: {
-    arrayMerge?:
-      | 'replace'
-      | 'concat'
-      | 'merge'
-      | ((target: any[], source: any[]) => any[]);
-    clone?: boolean;
-    customMerge?: (
-      key: string | symbol,
-      targetValue: any,
-      sourceValue: any,
-    ) => any;
-    functionMerge?: 'replace' | 'compose';
-    maxDepth?: number;
-  },
-): TMerged<T | S[number]>;
+>(target: T, sources: S, options?: DeepMergeOptions): TMerged<T | S[number]>;
 export function deepmerge<T extends Record<string, any>>(
   target: T,
   ...args: any[]
 ): Record<string, any> {
   let sources: Record<string, any>[];
-  let options: {
-    clone?: boolean;
-    customMerge?: (
-      key: string | symbol,
-      targetValue: any,
-      sourceValue: any,
-    ) => any;
-    arrayMerge?: 'replace' | 'concat' | 'merge';
-    functionMerge?: 'replace' | 'compose';
-    maxDepth?: number;
-  } = {};
+  let options: DeepMergeOptions = {};
 
   // Check if last arg is options object
   const lastArg = args[args.length - 1];
