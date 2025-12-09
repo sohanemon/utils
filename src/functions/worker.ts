@@ -32,118 +32,73 @@ export interface WorkerInstance {
 }
 
 /**
- * Creates a Web Worker with message handling capabilities.
+ * Converts a regular function into a workerized version that runs in a Web Worker.
  *
- * Provides a simple interface for creating and managing dedicated workers,
- * with built-in error handling and message passing. Useful for running
- * computationally intensive tasks in background threads without blocking
- * the main UI thread.
+ * This provides the ultimate DX for Web Workers - just write a normal function
+ * and "workerize" it to run in the background without blocking the UI.
  *
- * @param opts - Configuration options for the worker
- * @returns A worker instance with messaging methods
+ * @param fn - The function to workerize
+ * @returns A function that calls the original function in a worker and returns a Promise
  *
  * @example
  * ```ts
- * // Using a script URL
- * const worker = createWorker({
- *   script: new URL('./worker.js', import.meta.url),
- *   onMessage: (result) => console.log('Worker result:', result),
- *   onError: (error) => console.error('Worker error:', error),
- * });
+ * // Define a normal function
+ * function fibonacci(n: number): number {
+ *   if (n <= 1) return n;
+ *   return fibonacci(n - 1) + fibonacci(n - 2);
+ * }
  *
- * worker.postMessage({ action: 'calculate', data: [1, 2, 3] });
+ * // Workerize it
+ * const workerizedFib = workerize(fibonacci);
  *
- * // Cleanup
- * worker.terminate();
+ * // Use like a normal async function!
+ * const result = await workerizedFib(35);
+ * console.log(result); // Works just like the original function
  * ```
  *
  * @example
  * ```ts
- * // Using inline code
- * const worker = createWorker({
- *   script: `
- *     self.onmessage = function(e) {
- *       const result = e.data * 2;
- *       self.postMessage(result);
- *     };
- *   `,
- *   onMessage: (result) => console.log('Doubled:', result),
- * });
+ * // Works with any function signature
+ * const sumArray = workerize((arr: number[]) =>
+ *   arr.reduce((a, b) => a + b, 0)
+ * );
  *
- * worker.postMessage(21); // Logs: "Doubled: 42"
+ * const result = await sumArray([1, 2, 3, 4, 5]); // 15
  * ```
  */
-export function createWorker(opts: WorkerOpts): WorkerInstance {
-  const { script, options, onMessage, onError, onTerminate } = opts;
-
-  let worker: Worker;
-  let isTerminated = false;
-
-  try {
-    if (script instanceof URL) {
-      worker = new Worker(script, options);
-    } else {
-      // Create blob URL for inline code
-      const blob = new Blob([script], { type: 'application/javascript' });
-      const blobUrl = URL.createObjectURL(blob);
-      worker = new Worker(blobUrl, options);
-
-      // Clean up blob URL after worker creation
-      URL.revokeObjectURL(blobUrl);
-    }
-  } catch (err) {
-    console.log('⚡[worker.ts] Failed to create worker:', err);
-    throw err;
-  }
-
-  // Set up message handler
-  worker.onmessage = (event: MessageEvent) => {
-    try {
-      onMessage?.(event.data);
-    } catch (err) {
-      console.log('⚡[worker.ts] Error in message handler:', err);
-    }
-  };
-
-  // Set up error handler
-  worker.onerror = (error: ErrorEvent) => {
-    console.log('⚡[worker.ts] Worker error:', error);
-    try {
-      onError?.(error);
-    } catch (err) {
-      console.log('⚡[worker.ts] Error in error handler:', err);
-    }
-  };
-
-  const instance: WorkerInstance = {
-    postMessage: (message: WorkerMessage) => {
-      if (isTerminated) {
-        console.log('⚡[worker.ts] Cannot post message to terminated worker');
-        return;
-      }
+export function workerize<T extends (...args: any[]) => any>(
+  fn: T,
+): (...args: Parameters<T>) => Promise<ReturnType<T>> {
+  const workerCode = `
+    self.onmessage = async (e) => {
       try {
-        worker.postMessage(message);
-      } catch (err) {
-        console.log('⚡[worker.ts] Failed to post message:', err);
+        const fn = ${fn.toString()};
+        const result = await fn(...e.data);
+        self.postMessage({ type: 'result', result });
+      } catch (error) {
+        self.postMessage({ type: 'error', error: error.message });
       }
-    },
+    };
+  `;
 
-    terminate: () => {
-      if (isTerminated) return;
-      isTerminated = true;
-      try {
-        worker.terminate();
-        onTerminate?.();
-        console.log('⚡[worker.ts] Worker terminated');
-      } catch (err) {
-        console.log('⚡[worker.ts] Error terminating worker:', err);
-      }
-    },
+  const blob = new Blob([workerCode], { type: 'application/javascript' });
+  const worker = new Worker(URL.createObjectURL(blob));
 
-    get terminated() {
-      return isTerminated;
-    },
+  return (...args: Parameters<T>): Promise<ReturnType<T>> => {
+    return new Promise((resolve, reject) => {
+      worker.onmessage = (e) => {
+        if (e.data.type === 'result') {
+          resolve(e.data.result);
+        } else if (e.data.type === 'error') {
+          reject(new Error(e.data.error));
+        }
+      };
+
+      worker.onerror = (error) => {
+        reject(new Error(`Worker error: ${error.message}`));
+      };
+
+      worker.postMessage(args);
+    });
   };
-
-  return instance;
 }
