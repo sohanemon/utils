@@ -72,9 +72,29 @@ const extended = extendProps({ a: 1 }, { b: 'hello' }); // { a: 1, b: 'hello' }
 #### Data Transformation
 
 ```typescript
-import { hydrate, convertToSlug, normalizeText } from '@sohanemon/utils';
+import { hydrate, deepmerge, convertToSlug, normalizeText } from '@sohanemon/utils';
 
 const cleaned = hydrate({ a: null, b: { c: null } }); // { a: undefined, b: { c: undefined } }
+
+// Deep merge objects
+const merged = deepmerge({ user: { name: 'John' } }, { user: { age: 30 } });
+// { user: { name: 'John', age: 30 } }
+
+// Merge functions with custom logic
+const combined = deepmerge(
+  { onFinish() { console.log('first') } },
+  { onFinish(v) { console.log('second', v) } },
+  {
+    customMerge: (key, target, source) => {
+      if (typeof target === 'function' && typeof source === 'function') {
+        return (...args) => { target(...args); source(...args); };
+      }
+      return source;
+    }
+  }
+);
+// combined.onFinish('done') logs 'first' then 'second done'
+
 const slug = convertToSlug('Hello World!'); // 'hello-world'
 const normalized = normalizeText('Café', { removeAccents: true }); // 'cafe'
 ```
@@ -191,14 +211,21 @@ extendProps<T extends object, P extends object>(
 ```typescript
 hydrate<T>(data: T): Hydrate<T>
 
-deepmerge<T, U>(
+deepmerge<T extends Record<string, any>, S extends Record<string, any>[]>(
   target: T,
-  source: U,
+  ...sources: S
+): TMerged<T | S[number]>
+
+deepmerge<T extends Record<string, any>, S extends Record<string, any>[]>(
+  target: T,
+  sources: S,
   options?: {
-    arrayMerge?: (target: any[], source: any[]) => any[];
+    arrayMerge?: 'replace' | 'concat' | 'merge' | ((target: any[], source: any[]) => any[]);
+    clone?: boolean;
+    customMerge?: (key: string | symbol, targetValue: any, sourceValue: any) => any;
     maxDepth?: number;
   }
-): T & U
+): TMerged<T | S[number]>
 
 convertToSlug(str: string): string
 

@@ -207,4 +207,56 @@ describe('deepmerge', () => {
     );
     expect(result).toEqual({ arr: [{ a: 1, c: 3 }, { b: 2 }] });
   });
+
+  it('should merge functions with custom merge', () => {
+    const fn1 = () => 'first';
+    const fn2 = () => 'second';
+    const result = deepmerge(
+      { fn: fn1 },
+      { fn: fn2 },
+      {
+        customMerge: (key, target, source) => {
+          if (typeof target === 'function' && typeof source === 'function') {
+            return () => `${target()} and ${source()}`;
+          }
+          return source;
+        },
+      },
+    );
+    expect(result.fn()).toBe('first and second');
+  });
+
+  it('should merge functions directly with custom merge', () => {
+    const fn1 = () => 'first';
+    const fn2 = () => 'second';
+    const result = deepmerge(fn1 as any, fn2 as any, {
+      customMerge: (key, target, source) => {
+        if (typeof target === 'function' && typeof source === 'function') {
+          return () => `${target()} and ${source()}`;
+        }
+        return source;
+      },
+    }) as any;
+    expect(result()).toBe('first and second');
+  });
+
+  it('should chain multiple function merges', () => {
+    const result = deepmerge(
+      { onFinish: () => 'first' },
+      { onFinish: () => 'second' },
+      { onFinish: (v: string) => `third ${v}` },
+      {
+        customMerge: (key, target, source) => {
+          if (typeof target === 'function' && typeof source === 'function') {
+            return (...args: any[]) => {
+              target(...args);
+              return source(...args);
+            };
+          }
+          return source;
+        },
+      },
+    );
+    expect(result.onFinish('test')).toBe('third test');
+  });
 });

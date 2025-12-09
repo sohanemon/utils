@@ -184,7 +184,13 @@ export function deepmerge<T extends Record<string, any>>(
     if (!isPlainObject(target) && !Array.isArray(target)) {
       // For primitives or special objects, return the last source or target
       for (const source of sources) {
-        if (source !== undefined) return source;
+        if (source !== undefined) {
+          if (customMerge) {
+            const merged = customMerge('' as any, target, source);
+            if (merged !== undefined) return merged;
+          }
+          return source;
+        }
       }
       return target;
     }
