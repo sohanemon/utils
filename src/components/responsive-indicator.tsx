@@ -131,7 +131,8 @@ export const ResponsiveIndicator: React.FC<ResponsiveIndicatorProps> = ({
     ...positionStyle, // Apply the current position
   };
 
-  if (process.env['NODE_ENV'] === 'production') return null;
+  // TODO: Add proper production check that works in browser environment
+  // For now, always show in development/playground environment
 
   return (
     <button type="button" style={buttonStyle} onClick={handleClick}>

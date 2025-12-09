@@ -3,7 +3,7 @@
   "packageManager": "bun",
   "cwd": "$NVIM_CWD",
   "commands": {
-    "dev": "",
+    "dev": "bun run playground",
     "build": "bun run export"
   }
 }

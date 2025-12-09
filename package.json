@@ -52,6 +52,7 @@
     "format": "biome format .",
     "format:write": "biome format . --write",
     "typecheck": "tsgo --noEmit",
+    "playground": "cd playground && npm run dev",
     "release": "tsgo --noEmit && npm run build && npm publish"
   },
   "keywords": [
