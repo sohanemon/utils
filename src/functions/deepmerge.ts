@@ -50,9 +50,10 @@ type TMerged<T> = [T] extends [Array<any>]
  * @param target - The target object to merge into
  * @param sources - Source objects to merge from (can have additional properties)
  * @param options - Configuration options
- * @param options.arrayMerge - How to merge arrays: 'replace' (default), 'concat', or 'merge'
  * @param options.clone - Whether to clone the target (default: true)
  * @param options.customMerge - Custom merge function for specific keys
+ * @param options.arrayMerge - How to merge arrays: 'replace' (default), 'concat', or 'merge'
+ * @param options.functionMerge - How to merge functions: 'replace' (default) or 'compose'
  * @param options.maxDepth - Maximum recursion depth (default: 100)
  * @returns The merged object with proper typing
  *
@@ -103,6 +104,13 @@ type TMerged<T> = [T] extends [Array<any>]
  * const freshData = { posts: [{ id: 1, title: 'Updated', author: 'Bob' }] };
  * deepmerge(cachedData, freshData);
  * // { posts: [{ id: 1, title: 'Updated', author: 'Bob' }] }
+ *
+ * @example
+ * // Function composition
+ * const log1 = () => console.log('first');
+ * const log2 = () => console.log('second');
+ * const composed = deepmerge(log1, log2, { functionMerge: 'compose' });
+ * composed(); // logs 'first' then 'second'
  */
 export function deepmerge<
   T extends Record<string, any>,
@@ -126,6 +134,7 @@ export function deepmerge<
       targetValue: any,
       sourceValue: any,
     ) => any;
+    functionMerge?: 'replace' | 'compose';
     maxDepth?: number;
   },
 ): TMerged<T | S[number]>;
@@ -135,13 +144,14 @@ export function deepmerge<T extends Record<string, any>>(
 ): Record<string, any> {
   let sources: Record<string, any>[];
   let options: {
-    arrayMerge?: 'replace' | 'concat' | 'merge';
     clone?: boolean;
     customMerge?: (
       key: string | symbol,
       targetValue: any,
       sourceValue: any,
     ) => any;
+    arrayMerge?: 'replace' | 'concat' | 'merge';
+    functionMerge?: 'replace' | 'compose';
     maxDepth?: number;
   } = {};
 
@@ -154,6 +164,7 @@ export function deepmerge<T extends Record<string, any>>(
     (lastArg.arrayMerge !== undefined ||
       lastArg.clone !== undefined ||
       lastArg.customMerge !== undefined ||
+      lastArg.functionMerge !== undefined ||
       lastArg.maxDepth !== undefined)
   ) {
     options = { ...options, ...lastArg };
@@ -165,8 +176,9 @@ export function deepmerge<T extends Record<string, any>>(
   const {
     arrayMerge = 'replace',
     clone = true,
-    customMerge,
+    functionMerge = 'replace',
     maxDepth = 100,
+    customMerge,
   } = options;
 
   const visited = new WeakMap<object, object>();
@@ -188,6 +200,16 @@ export function deepmerge<T extends Record<string, any>>(
           if (customMerge) {
             const merged = customMerge('' as any, target, source);
             if (merged !== undefined) return merged;
+          }
+          if (typeof target === 'function' && typeof source === 'function') {
+            if (functionMerge === 'compose') {
+              return (...args: unknown[]) => {
+                target(...args);
+                source(...args);
+              };
+            } else {
+              return source;
+            }
           }
           return source;
         }
@@ -230,6 +252,18 @@ export function deepmerge<T extends Record<string, any>>(
             customMerge(key, targetValue, sourceValue) !== undefined
           ) {
             (result as any)[key] = customMerge(key, targetValue, sourceValue);
+          } else if (
+            typeof targetValue === 'function' &&
+            typeof sourceValue === 'function'
+          ) {
+            if (functionMerge === 'compose') {
+              (result as any)[key] = (...args: unknown[]) => {
+                targetValue(...args);
+                sourceValue(...args);
+              };
+            } else {
+              (result as any)[key] = sourceValue;
+            }
           } else if (isPlainObject(targetValue) && isPlainObject(sourceValue)) {
             (result as any)[key] = mergeObjects(
               targetValue,

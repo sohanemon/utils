@@ -259,4 +259,46 @@ describe('deepmerge', () => {
     );
     expect(result.onFinish('test')).toBe('third test');
   });
+
+  it('should replace functions by default', () => {
+    const fn1 = () => 'first';
+    const fn2 = () => 'second';
+    const result = deepmerge({ fn: fn1 }, { fn: fn2 });
+    expect(result.fn).toBe(fn2);
+  });
+
+  it('should compose functions with functionMerge option', () => {
+    const calls: string[] = [];
+    const fn1 = () => calls.push('first');
+    const fn2 = () => calls.push('second');
+    const result = deepmerge(
+      { fn: fn1 },
+      { fn: fn2 },
+      { functionMerge: 'compose' },
+    );
+    result.fn();
+    expect(calls).toEqual(['first', 'second']);
+  });
+
+  it('should compose top-level functions', () => {
+    const calls: string[] = [];
+    const fn1 = () => calls.push('first');
+    const fn2 = () => calls.push('second');
+    const result = deepmerge(fn1 as any, fn2 as any, {
+      functionMerge: 'compose',
+    }) as any;
+    result();
+    expect(calls).toEqual(['first', 'second']);
+  });
+
+  it('should replace functions when functionMerge is replace', () => {
+    const fn1 = () => 'first';
+    const fn2 = () => 'second';
+    const result = deepmerge(
+      { fn: fn1 },
+      { fn: fn2 },
+      { functionMerge: 'replace' },
+    );
+    expect(result.fn).toBe(fn2);
+  });
 });
