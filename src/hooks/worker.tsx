@@ -84,29 +84,23 @@ export function useWorker<T extends (...args: any[]) => any>(
  * useWorkerEffect — Run a side effect in a Web Worker.
  *
  * This hook acts like useEffect but runs the callback in a Web Worker instead of the main thread.
- * The callback is executed asynchronously in a worker when the execute function is called.
+ * The callback is executed asynchronously in a worker whenever the dependencies change.
  *
- * @param callback - Function to run in the worker (should be a side effect, not return data)
+ * @param effect - Function to run in the worker (should be a side effect, not return data)
+ * @param deps - Dependencies array, like useEffect
  *
  * @example
  * ```tsx
  * import React from 'react';
- * import { useWorkerEffect } from './hooks/useWorkerEffect';
+ * import { useWorkerEffect } from './hooks/worker';
  *
  * function HeavyComputationComponent({ data }: { data: number[] }) {
- *   const { execute } = useWorkerEffect((nums: number[]) => {
- *     // This runs in a Web Worker
- *     const result = nums.reduce((a, b) => a + b, 0);
+ *   useWorkerEffect(() => {
+ *     // This runs in a Web Worker whenever data changes
+ *     const result = data.reduce((a, b) => a + b, 0);
  *     console.log('Computed sum in worker:', result);
  *     // Side effects like logging, API calls, etc.
- *   });
- *
- *   return (
- *     <div>
- *       <button onClick={() => execute(data)}>Run Effect in Worker</button>
- *       Check console for worker output
- *     </div>
- *   );
+ *   }, [data]);
  * }
  * ```
  */
