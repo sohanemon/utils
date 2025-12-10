@@ -35,6 +35,16 @@ or
 yarn add @sohanemon/utils
 ```
 
+### Peer Dependencies
+
+This package has several peer dependencies that you must install separately:
+
+```bash
+npm install react react-dom @iconify/react clsx tailwind-merge @radix-ui/react-slot
+```
+
+These dependencies are expected to be provided by your application and are not bundled with this package.
+
 ## Usage
 
 ### Importing Utilities

@@ -1,6 +1,6 @@
 {
   "name": "@sohanemon/utils",
-  "version": "6.4.3",
+  "version": "6.4.4",
   "author": "Sohan Emon <sohanemon@outlook.com>",
   "description": "",
   "type": "module",
@@ -80,19 +80,17 @@
     "@vitest/ui": "^4.0.14",
     "jsdom": "^27.2.0",
     "tsdown": "^0.16.4",
+    "typedoc": "^0.28.15",
     "typedoc-plugin-markdown": "^4.9.0",
     "typescript": "^5.9.3",
     "vite": "npm:rolldown-vite@^7.2.5",
     "vitest": "^4.0.14"
   },
-  "dependencies": {
+  "peerDependencies": {
     "@iconify/react": "^6.0.2",
-    "@radix-ui/react-slot": "^1.2.4",
     "clsx": "^2.1.1",
     "tailwind-merge": "^3.3.1",
-    "typedoc": "^0.28.15"
-  },
-  "peerDependencies": {
+    "@radix-ui/react-slot": "^1.2.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
