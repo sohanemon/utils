@@ -451,9 +451,11 @@ export type TwoOf<T> = {
  * type PrettyComplex = Prettify<Complex>; // Shows as { a: string; b: number }
  * ```
  */
-export type Prettify<T> = {
-  [K in keyof T]: T[K];
-} & {};
+export type Prettify<T> = T extends infer U
+  ? U extends object
+    ? { [K in keyof U]: U[K] } & {}
+    : U
+  : never;
 
 /**
  * Extracts all nested keys of an object type as dot-separated strings.
