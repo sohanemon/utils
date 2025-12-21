@@ -70,10 +70,13 @@ export function MediaWrapper({
   const className = useFallback ? classNameFallback : classNameOriginal;
 
   // React.Fragment only accepts key, ref, and children props
-  const wrapperProps =
-    Wrapper === React.Fragment
-      ? { key: props.key, ref: props.ref, children: props.children }
-      : { className, ...props };
-
-  return <Wrapper {...wrapperProps} />;
+  if (Wrapper === React.Fragment) {
+    return (
+      <Wrapper key={props.key} ref={props.ref}>
+        {props.children}
+      </Wrapper>
+    );
+  } else {
+    return <Wrapper className={className} {...props} />;
+  }
 }

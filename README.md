@@ -219,10 +219,10 @@ getObjectValue<T, S extends string>(
   path: S
 ): GetValue<T, SplitPath<S>> | undefined;
 
-extendProps<T extends object, P extends object>(
+extendProps<T, P extends object>(
   base: T,
   props: P
-): T & P;
+): T extends null | undefined ? T : T & P;
 ```
 
 #### Data Transformation

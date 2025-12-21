@@ -160,15 +160,15 @@ export function getObjectValue(
  * preserving the original type information.
  *
  * Works with both plain objects and callable functions since
- * functions in JavaScript are objects too.
+ * functions in JavaScript are objects too. Also handles nullable types.
  *
- * @template T The base object or function type
+ * @template T The base object or function type (can be null/undefined)
  * @template P The additional properties type
  *
- * @param base - The object or function to extend
+ * @param base - The object or function to extend (can be null/undefined)
  * @param props - An object containing properties to attach
  *
- * @returns The same object/function, augmented with the given properties
+ * @returns The same object/function, augmented with the given properties, or the original value if null/undefined
  *
  * @example
  * ```ts
@@ -196,11 +196,19 @@ export function getObjectValue(
  *   theme: 'dark',
  *   notifications: true
  * });
+ *
+ * // Handle nullable types (e.g., Supabase Session | null)
+ * const session: Session | null = getSession();
+ * const extendedSession = extendProps(session, { customProp: 'value' });
+ * // extendedSession is (Session & { customProp: string }) | null
  * ```
  */
-export function extendProps<T extends object, P extends object>(
+export function extendProps<T, P extends object>(
   base: T,
   props: P,
-): T & P {
-  return Object.assign(base, props);
+): T extends null | undefined ? T : T & P {
+  if (base == null) return base as T extends null | undefined ? T : never;
+  return Object.assign(base, props) as T extends null | undefined
+    ? never
+    : T & P;
 }
