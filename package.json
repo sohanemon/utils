@@ -96,5 +96,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "@ts-utilities/core": "^1.0.3"
   }
 }

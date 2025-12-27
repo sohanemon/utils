@@ -1,7 +1,9 @@
+import {
+  schedule as _schedule,
+  type ScheduleOpts,
+  type Task,
+} from '@ts-utilities/core';
 import * as React from 'react';
-import type { ScheduleOpts } from '../functions';
-import type { Task } from '../functions/schedule';
-import { schedule as _schedule } from '../functions/schedule';
 
 /**
  * useSchedule — run non-urgent work later, without blocking UI.

@@ -5,11 +5,7 @@
     "": {
       "name": "@sohanemon/utils",
       "dependencies": {
-        "@iconify/react": "^6.0.2",
-        "@radix-ui/react-slot": "^1.2.4",
-        "clsx": "^2.1.1",
-        "tailwind-merge": "^3.3.1",
-        "typedoc": "^0.28.15",
+        "@ts-utilities/core": "^1.0.3",
       },
       "devDependencies": {
         "@biomejs/biome": "2.3.8",
@@ -23,14 +19,19 @@
         "@vitest/ui": "^4.0.14",
         "jsdom": "^27.2.0",
         "tsdown": "^0.16.4",
+        "typedoc": "^0.28.15",
         "typedoc-plugin-markdown": "^4.9.0",
         "typescript": "^5.9.3",
         "vite": "npm:rolldown-vite@^7.2.5",
         "vitest": "^4.0.14",
       },
       "peerDependencies": {
+        "@iconify/react": "^6.0.2",
+        "@radix-ui/react-slot": "^1.2.4",
+        "clsx": "^2.1.1",
         "react": "^19.2.0",
         "react-dom": "^19.2.0",
+        "tailwind-merge": "^3.3.1",
       },
     },
   },
@@ -294,6 +295,8 @@
     "@testing-library/jest-dom": ["@testing-library/jest-dom@6.9.1", "", { "dependencies": { "@adobe/css-tools": "^4.4.0", "aria-query": "^5.0.0", "css.escape": "^1.5.1", "dom-accessibility-api": "^0.6.3", "picocolors": "^1.1.1", "redent": "^3.0.0" } }, "sha512-zIcONa+hVtVSSep9UT3jZ5rizo2BsxgyDYU7WFD5eICBE7no3881HGeb/QkGfsJs6JTkY1aQhT7rIPC7e+0nnA=="],
 
     "@testing-library/react": ["@testing-library/react@16.3.0", "", { "dependencies": { "@babel/runtime": "^7.12.5" }, "peerDependencies": { "@testing-library/dom": "^10.0.0", "@types/react": "^18.0.0 || ^19.0.0", "@types/react-dom": "^18.0.0 || ^19.0.0", "react": "^18.0.0 || ^19.0.0", "react-dom": "^18.0.0 || ^19.0.0" }, "optionalPeers": ["@types/react", "@types/react-dom"] }, "sha512-kFSyxiEDwv1WLl2fgsq6pPBbw5aWKrsY2/noi1Id0TK0UParSF62oFQFGHXIyaG4pp2tEub/Zlel+fjjZILDsw=="],
+
+    "@ts-utilities/core": ["@ts-utilities/core@1.0.3", "", {}, "sha512-u2XAHVTXsahWcgFR5QjY8WcZZoJEOgsWVjG5YlW+WPOmFf3Z/cIZFXrA657ZtFy0f7jockjoV4uuM0o3LFl7Ng=="],
 
     "@tsconfig/strictest": ["@tsconfig/strictest@2.0.8", "", {}, "sha512-XnQ7vNz5HRN0r88GYf1J9JJjqtZPiHt2woGJOo2dYqyHGGcd6OLGqSlBB6p1j9mpzja6Oe5BoPqWmeDx6X9rLw=="],
 
