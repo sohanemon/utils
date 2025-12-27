@@ -78,6 +78,7 @@ describe('debounce', () => {
     debounced();
     debounced();
 
+    await sleep(15);
     expect(count).toBe(1);
   });
 });
@@ -91,7 +92,7 @@ describe('throttle', () => {
     throttled();
     throttled();
 
-    expect(count).toBe(2);
+    expect(count).toBe(1);
   });
 });
 

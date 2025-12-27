@@ -1,21 +1,19 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 import * as React from 'react';
-import { useScrollTracker } from '../../src/hooks/scroll-tracker';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ScrollTracker } from '../../src/components/scroll-tracker';
-
-// Mock the schedule function to run synchronously for testing
-vi.mock('../../src/functions/schedule', () => ({
-  schedule: (task: () => void) => {
-    task();
-  },
-}));
+import { useScrollTracker } from '../../src/hooks/scroll-tracker';
 
 describe('useScrollTracker', () => {
   beforeEach(() => {
     // Mock window methods
     window.addEventListener = vi.fn();
     window.removeEventListener = vi.fn();
+    // Mock requestIdleCallback to run synchronously
+    Object.defineProperty(window, 'requestIdleCallback', {
+      value: (callback: () => void) => callback(),
+      configurable: true,
+    });
   });
 
   afterEach(() => {
