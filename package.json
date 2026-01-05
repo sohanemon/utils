@@ -1,6 +1,6 @@
 {
   "name": "@sohanemon/utils",
-  "version": "7.0.1",
+  "version": "7.0.5",
   "author": "Sohan Emon <sohanemon@outlook.com>",
   "description": "",
   "type": "module",
@@ -98,6 +98,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@ts-utilities/core": "^1.0.6"
+    "@ts-utilities/core": "^1.0.12"
   }
 }
