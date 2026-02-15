@@ -338,30 +338,24 @@ export const useLocalStorage = <T extends Record<string, any>>(
   key: string,
   defaultValue: T,
 ): LocalStorageValue<T> => {
-  const [storedValue, setStoredValue] = React.useState<T>(defaultValue);
-
-  React.useEffect(() => {
-    const value = localStorage.getItem(key);
-    if (value) {
-      setStoredValue(JSON.parse(value));
+  const [storedValue, setStoredValue] = React.useState<T>(() => {
+    try {
+      const value = localStorage.getItem(key);
+      return value ? JSON.parse(value) : defaultValue;
+    } catch {
+      return defaultValue;
     }
-  }, [key]);
+  });
 
-  const updateStoredValue = React.useCallback(
-    (valueOrFn: React.SetStateAction<T>) => {
-      let newValue: T;
-      if (typeof valueOrFn === 'function') {
-        newValue = (valueOrFn as (prevState: T) => T)(storedValue);
-      } else {
-        newValue = valueOrFn;
-      }
-      localStorage.setItem(key, JSON.stringify(newValue));
-      setStoredValue(newValue);
-    },
-    [key],
-  );
+  useUpdateEffect(() => {
+    try {
+      localStorage.setItem(key, JSON.stringify(storedValue));
+    } catch (error) {
+      console.error(`Error writing to localStorage key "${key}":`, error);
+    }
+  }, [key, storedValue]);
 
-  return [storedValue, updateStoredValue];
+  return [storedValue, setStoredValue];
 };
 
 /**
