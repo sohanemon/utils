@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { isSSR } from '../functions';
 import { useScheduledEffect } from './schedule';
 
 type Breakpoint = 'sm' | 'md' | 'lg' | 'xl' | '2xl';
@@ -9,6 +10,14 @@ type MediaQueryMap<T> = { DEFAULT: T } & Partial<Record<Breakpoint, T>>;
 
 const isMediaQueryMap = <T,>(arg: unknown): arg is MediaQueryMap<T> =>
   typeof arg === 'object' && arg !== null && 'DEFAULT' in arg;
+
+const BREAKPOINT_CONFIGS = [
+  { key: '2xl', query: '(min-width: 1536px)' },
+  { key: 'xl', query: '(min-width: 1280px)' },
+  { key: 'lg', query: '(min-width: 1024px)' },
+  { key: 'md', query: '(min-width: 768px)' },
+  { key: 'sm', query: '(min-width: 640px)' },
+] as const;
 
 /**
  * Hook to get responsive values based on breakpoints (mobile-first).
@@ -79,73 +88,48 @@ export function useMediaQuery<T>(map: MediaQueryMap<T>): T;
 export function useMediaQuery(
   query: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | `(${string})`,
 ): boolean;
+
 export function useMediaQuery<T>(
   input: MediaQueryMap<T> | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | `(${string})`,
 ): T | boolean {
-  // Mapper object path
   if (isMediaQueryMap<T>(input)) {
     const [value, setValue] = React.useState<T>(() => {
-      // SSR-safe: return DEFAULT on server, check on client
-      if (typeof window === 'undefined') return input.DEFAULT;
+      if (isSSR) return input.DEFAULT;
 
-      const breakpointConfigs: {
-        key: Breakpoint;
-        query: string;
-        value: T | undefined;
-      }[] = [
-        { key: '2xl', query: '(min-width: 1536px)', value: input['2xl'] },
-        { key: 'xl', query: '(min-width: 1280px)', value: input.xl },
-        { key: 'lg', query: '(min-width: 1024px)', value: input.lg },
-        { key: 'md', query: '(min-width: 768px)', value: input.md },
-        { key: 'sm', query: '(min-width: 640px)', value: input.sm },
-      ];
-
-      const definedBreakpoints = breakpointConfigs.filter(
-        (bp) => bp.value !== undefined,
-      );
-
-      for (const bp of definedBreakpoints) {
-        if (window.matchMedia(bp.query).matches) {
-          return bp.value as T;
+      for (const bp of BREAKPOINT_CONFIGS) {
+        const bpValue = input[bp.key];
+        if (bpValue !== undefined && window.matchMedia(bp.query).matches) {
+          return bpValue;
         }
       }
       return input.DEFAULT;
     });
 
+    const inputRef = React.useRef(input);
+    inputRef.current = input;
+
     React.useEffect(() => {
       if (typeof window === 'undefined') return;
 
-      const breakpointConfigs: {
-        key: Breakpoint;
-        query: string;
-        value: T | undefined;
-      }[] = [
-        { key: '2xl', query: '(min-width: 1536px)', value: input['2xl'] },
-        { key: 'xl', query: '(min-width: 1280px)', value: input.xl },
-        { key: 'lg', query: '(min-width: 1024px)', value: input.lg },
-        { key: 'md', query: '(min-width: 768px)', value: input.md },
-        { key: 'sm', query: '(min-width: 640px)', value: input.sm },
-      ];
-
-      const definedBreakpoints = breakpointConfigs.filter(
-        (bp) => bp.value !== undefined,
-      );
-
       const updateValue = () => {
-        for (const bp of definedBreakpoints) {
-          if (window.matchMedia(bp.query).matches) {
-            setValue(bp.value as T);
+        const currentInput = inputRef.current;
+        for (const bp of BREAKPOINT_CONFIGS) {
+          const bpValue = currentInput[bp.key];
+          if (bpValue !== undefined && window.matchMedia(bp.query).matches) {
+            setValue(bpValue);
             return;
           }
         }
-        setValue(input.DEFAULT);
+        setValue(currentInput.DEFAULT);
       };
 
       const listeners: MediaQueryList[] = [];
-      for (const bp of definedBreakpoints) {
-        const mql = window.matchMedia(bp.query);
-        mql.addEventListener('change', updateValue);
-        listeners.push(mql);
+      for (const bp of BREAKPOINT_CONFIGS) {
+        if (input[bp.key] !== undefined) {
+          const mql = window.matchMedia(bp.query);
+          mql.addEventListener('change', updateValue);
+          listeners.push(mql);
+        }
       }
 
       updateValue();
@@ -155,12 +139,11 @@ export function useMediaQuery<T>(
           mql.removeEventListener('change', updateValue);
         }
       };
-    }, [input]);
+    }, [input.DEFAULT, input['2xl'], input.lg, input.md, input.sm, input.xl]);
 
     return value;
   }
 
-  // String query path (existing behavior)
   const parsedQuery = React.useMemo(() => {
     switch (input) {
       case 'sm':
@@ -178,16 +161,10 @@ export function useMediaQuery<T>(
     }
   }, [input]);
 
-  const getMatches = (query: string) => {
-    if (typeof window !== 'undefined') {
-      return window.matchMedia(query).matches;
-    }
-    return false;
-  };
-
-  const [matches, setMatches] = React.useState<boolean>(
-    getMatches(parsedQuery),
-  );
+  const [matches, setMatches] = React.useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia(parsedQuery).matches;
+  });
 
   useScheduledEffect(() => {
     if (typeof window === 'undefined') return;
@@ -195,7 +172,7 @@ export function useMediaQuery<T>(
     const matchMedia = window.matchMedia(parsedQuery);
 
     const handleChange = () => {
-      setMatches(getMatches(parsedQuery));
+      setMatches(matchMedia.matches);
     };
 
     handleChange();
