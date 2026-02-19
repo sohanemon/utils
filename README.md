@@ -159,7 +159,25 @@ const { data, isLoading } = useAsync(async (signal) => {
 
 const [value, setValue] = useLocalStorage('key', { count: 0 });
 
+// Media Query - Boolean check
 const isMobile = useMediaQuery('sm');
+const isDark = useMediaQuery('(prefers-color-scheme: dark)');
+
+// Media Query - Responsive value mapper (mobile-first)
+const fontSize = useMediaQuery({
+  DEFAULT: 'text-sm',
+  sm: 'text-base',
+  lg: 'text-xl'
+});
+// Returns 'text-xl' on large screens, 'text-base' on small, 'text-sm' otherwise
+
+const columns = useMediaQuery({
+  DEFAULT: 1,
+  sm: 2,
+  lg: 3,
+  xl: 4
+});
+// Returns 4 columns on xl, 3 on lg, 2 on sm, 1 otherwise
 
 const { isCopied, copy } = useCopyToClipboard();
 
@@ -379,7 +397,11 @@ useIsomorphicEffect: typeof React.useLayoutEffect | typeof React.useEffect
 
 #### UI & Interaction
 ```typescript
+// Boolean check
 useMediaQuery(tailwindBreakpoint: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | `(${string})`): boolean
+
+// Responsive value mapper
+useMediaQuery<T>(map: { DEFAULT: T } & Partial<Record<'sm' | 'md' | 'lg' | 'xl' | '2xl', T>>): T
 
 useClickOutside(callback: () => void): React.RefObject<HTMLDivElement>
 

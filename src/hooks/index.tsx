@@ -5,6 +5,7 @@ import { copyToClipboard } from '../functions';
 
 export * from './action';
 export * from './async';
+export * from './media-query';
 export * from './schedule';
 export * from './scroll-tracker';
 export * from './worker';
@@ -46,71 +47,6 @@ export const useClickOutside = (
   });
   return ref;
 };
-
-/**
- * Hook to match a media query based on Tailwind CSS breakpoints or custom queries.
- * @param tailwindBreakpoint - The Tailwind breakpoint or custom query string.
- * @returns A boolean indicating whether the media query matches.
- *
- * @example
- * ```tsx
- * const isMobile = useMediaQuery('md'); // false on screens >= 768px
- * const isLarge = useMediaQuery('lg'); // true on screens >= 1024px
- * const isDark = useMediaQuery('(prefers-color-scheme: dark)');
- *
- * return (
- *   <div className={isMobile ? 'mobile-layout' : 'desktop-layout'}>
- *     Content
- *   </div>
- * );
- * ```
- */
-export function useMediaQuery(
-  tailwindBreakpoint: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | `(${string})`,
-): boolean {
-  const parsedQuery = React.useMemo(() => {
-    switch (tailwindBreakpoint) {
-      case 'sm':
-        return '(min-width: 640px)';
-      case 'md':
-        return '(min-width: 768px)';
-      case 'lg':
-        return '(min-width: 1024px)';
-      case 'xl':
-        return '(min-width: 1280px)';
-      case '2xl':
-        return '(min-width: 1536px)';
-      default:
-        return tailwindBreakpoint;
-    }
-  }, [tailwindBreakpoint]);
-
-  const getMatches = (parsedQuery: string) => {
-    if (typeof window !== 'undefined') {
-      return window.matchMedia(parsedQuery).matches;
-    }
-    return false;
-  };
-
-  const [matches, setMatches] = React.useState<boolean>(
-    getMatches(parsedQuery),
-  );
-
-  const handleChange = () => {
-    setMatches(getMatches(parsedQuery));
-  };
-
-  useScheduledEffect(() => {
-    const matchMedia = window.matchMedia(parsedQuery);
-    handleChange();
-    matchMedia.addEventListener('change', handleChange);
-    return () => {
-      matchMedia.removeEventListener('change', handleChange);
-    };
-  }, [parsedQuery]);
-
-  return matches;
-}
 
 /**
  * Runs an effect only once when the component mounts.

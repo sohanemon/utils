@@ -1,22 +1,21 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import * as React from 'react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   useClickOutside,
-  useIsomorphicEffect,
-  useMediaQuery,
-  useSessionStorage,
-  useLocalStorage,
-  useQuerySelector,
-  useIsScrolling,
-  useIsAtTop,
-  useIntersection,
   useDebounce,
-  useTimeout,
   useEffectOnce,
-  useUpdateEffect,
+  useIntersection,
+  useIsAtTop,
   useIsClient,
+  useIsomorphicEffect,
+  useIsScrolling,
+  useLocalStorage,
   useLockScroll,
+  useQuerySelector,
+  useSessionStorage,
+  useTimeout,
+  useUpdateEffect,
 } from '../../src/hooks';
 
 describe('hooks/index', () => {
@@ -147,14 +146,6 @@ describe('hooks/index', () => {
       renderHook(() => useIsomorphicEffect(effect, []));
 
       expect(effect).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  describe('useMediaQuery', () => {
-    it('should return boolean for media query', () => {
-      const { result } = renderHook(() => useMediaQuery('(max-width: 768px)'));
-
-      expect(typeof result.current).toBe('boolean');
     });
   });
 
