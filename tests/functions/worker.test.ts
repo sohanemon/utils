@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock the workerize function to simulate worker behavior for testing
 vi.mock('../../src/functions/worker', () => ({

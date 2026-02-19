@@ -1,5 +1,5 @@
-import { bench, vi, expect } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import { bench, expect, vi } from 'vitest';
 import { useAsync } from '../../src/hooks/async';
 
 bench('useAsync hook initialization', () => {

@@ -1,6 +1,6 @@
-import { bench } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 import { useEffect, useLayoutEffect, useState } from 'react';
+import { bench } from 'vitest';
 import { useIsomorphicEffect, useScheduledEffect } from '../../src/hooks';
 
 function useEffectHook(callback: () => void | (() => void), deps: any[] = []) {

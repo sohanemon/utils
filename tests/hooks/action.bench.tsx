@@ -1,5 +1,5 @@
+import { act, renderHook } from '@testing-library/react';
 import { bench, vi } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
 import { useAction } from '../../src/hooks/action';
 
 bench('useAction hook initialization', () => {

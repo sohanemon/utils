@@ -1,5 +1,5 @@
-import { bench, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
+import { bench, vi } from 'vitest';
 import { useSchedule } from '../../src/hooks/schedule';
 
 bench('useSchedule hook initialization', () => {
