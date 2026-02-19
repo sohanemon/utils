@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import { isSSR } from '../functions';
+import { useMediaQuery } from '../hooks';
 
 type Side = 'bottom-left' | 'bottom-right' | 'top-right' | 'top-left';
 
@@ -12,9 +12,11 @@ interface ResponsiveIndicatorProps {
   side?: Side;
   /** Offset from the corner in the specified unit. Defaults to 2. */
   offset?: number;
-  /** Unit for the offset. Defaults to 'px'. */
+  /** Unit for the offset. Defaults to 'rem'. */
   unit?: 'px' | 'rem';
 }
+
+const sides: Side[] = ['bottom-left', 'bottom-right', 'top-right', 'top-left'];
 
 /**
  * A development-only component that displays the current Tailwind CSS breakpoint.
@@ -37,105 +39,77 @@ interface ResponsiveIndicatorProps {
 export const ResponsiveIndicator: React.FC<ResponsiveIndicatorProps> = ({
   side,
   offset = 2,
-  unit = 'px',
+  unit = 'rem',
 }) => {
-  const [viewportWidth, setViewportWidth] = React.useState(
-    isSSR ? 0 : window.innerWidth,
+  const [currentSide, setCurrentSide] = React.useState<Side>(
+    side ?? 'bottom-left',
   );
 
-  const sides = [
-    'bottom-left',
-    'bottom-right',
-    'top-right',
-    'top-left',
-  ] as const;
-  /**
-   * Possible positions for the responsive indicator.
-   */
-  type Side = 'bottom-left' | 'bottom-right' | 'top-right' | 'top-left';
+  const breakpoint = useMediaQuery({
+    DEFAULT: 'xs',
+    sm: 'sm',
+    md: 'md',
+    lg: 'lg',
+    xl: 'xl',
+    '2xl': '2xl',
+  });
 
-  const sideStyles: Record<Side, (offset: number) => React.CSSProperties> = {
-    'bottom-left': (offset) => ({
-      bottom: `${offset}rem`,
-      left: `${offset}rem`,
-    }),
-    'bottom-right': (offset) => ({
-      bottom: `${offset}rem`,
-      right: `${offset}rem`,
-    }),
-    'top-right': (offset) => ({ top: `${offset}rem`, right: `${offset}rem` }),
-    'top-left': (offset) => ({ top: `${offset}rem`, left: `${offset}rem` }),
-  };
-
-  const initialSide = side || 'bottom-left';
-  const [currentSide, setCurrentSide] = React.useState<Side>(initialSide);
+  const [viewportWidth, setViewportWidth] = React.useState(
+    typeof window !== 'undefined' ? window.innerWidth : 0,
+  );
 
   React.useEffect(() => {
-    const handleResize = () => {
-      setViewportWidth(window.innerWidth);
-    };
+    if (typeof window === 'undefined') return;
 
+    const handleResize = () => setViewportWidth(window.innerWidth);
     window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Function to handle button click
+  const text =
+    breakpoint === '2xl' && viewportWidth >= 1792
+      ? unit === 'rem'
+        ? `${(viewportWidth / 16).toFixed(1)}rem`
+        : `${viewportWidth}${unit}`
+      : breakpoint;
+
+  const sideStyles: Record<Side, React.CSSProperties> = {
+    'bottom-left': { bottom: `${offset}${unit}`, left: `${offset}${unit}` },
+    'bottom-right': { bottom: `${offset}${unit}`, right: `${offset}${unit}` },
+    'top-right': { top: `${offset}${unit}`, right: `${offset}${unit}` },
+    'top-left': { top: `${offset}${unit}`, left: `${offset}${unit}` },
+  };
+
   const handleClick = () => {
     const currentIndex = sides.indexOf(currentSide);
     const nextIndex = (currentIndex + 1) % sides.length;
     setCurrentSide(sides[nextIndex]!);
   };
 
-  let text = '';
-  if (viewportWidth < 640) {
-    text = 'xs';
-  } else if (viewportWidth >= 640 && viewportWidth < 768) {
-    text = 'sm';
-  } else if (viewportWidth >= 768 && viewportWidth < 1024) {
-    text = 'md';
-  } else if (viewportWidth >= 1024 && viewportWidth < 1280) {
-    text = 'lg';
-  } else if (viewportWidth >= 1280 && viewportWidth < 1536) {
-    text = 'xl';
-  } else if (viewportWidth >= 1536 && viewportWidth < 1792) {
-    text = '2xl';
-  } else {
-    text =
-      unit === 'rem'
-        ? `${(viewportWidth / 16).toFixed(1)}rem`
-        : `${viewportWidth}${unit}`;
-  }
-
-  const positionStyle = sideStyles[currentSide](offset);
-
-  const buttonStyle: React.CSSProperties = {
-    position: 'fixed',
-    zIndex: 50,
-    display: 'grid',
-    minHeight: '2.5rem',
-    minWidth: '2.5rem',
-    borderRadius: '30px',
-    placeContent: 'center',
-    backgroundColor: '#2d3748',
-    fontFamily: 'Courier New, Courier, monospace',
-    fontSize: '1rem',
-    color: '#ffffff',
-    border: '2px solid #4a5568',
-    boxShadow:
-      '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-    padding: '0.5rem',
-    transition: 'all 0.2s ease-in-out',
-    ...positionStyle, // Apply the current position
-  };
-
-  // TODO: Add proper production check that works in browser environment
-  // For now, always show in development/playground environment
-
   return (
-    <button type="button" style={buttonStyle} onClick={handleClick}>
+    <button
+      type="button"
+      onClick={handleClick}
+      style={{
+        position: 'fixed',
+        zIndex: 50,
+        display: 'grid',
+        height: '2.5rem',
+        minWidth: '2.5rem',
+        borderRadius: '30px',
+        placeContent: 'center',
+        backgroundColor: '#2d3748',
+        fontFamily: 'Courier New, Courier, monospace',
+        fontSize: '1rem',
+        color: '#ffffff',
+        border: '2px solid #4a5568',
+        boxShadow:
+          '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+        padding: '0.5rem',
+        transition: 'all 0.2s ease-in-out',
+        ...sideStyles[currentSide],
+      }}
+    >
       {text}
     </button>
   );
