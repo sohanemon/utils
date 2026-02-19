@@ -4,133 +4,90 @@ import * as React from 'react';
 import { isSSR } from '../functions';
 import { useScheduledEffect } from './schedule';
 
-type Breakpoint = 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+const BREAKPOINTS = {
+  sm: 640,
+  md: 768,
+  lg: 1024,
+  xl: 1280,
+  '2xl': 1536,
+} as const;
+
+type Breakpoint = keyof typeof BREAKPOINTS | `max-${keyof typeof BREAKPOINTS}`;
 
 type MediaQueryMap<T> = { DEFAULT: T } & Partial<Record<Breakpoint, T>>;
 
 const isMediaQueryMap = <T,>(arg: unknown): arg is MediaQueryMap<T> =>
   typeof arg === 'object' && arg !== null && 'DEFAULT' in arg;
 
-const BREAKPOINT_CONFIGS = [
-  { key: '2xl', query: '(min-width: 1536px)' },
-  { key: 'xl', query: '(min-width: 1280px)' },
-  { key: 'lg', query: '(min-width: 1024px)' },
-  { key: 'md', query: '(min-width: 768px)' },
-  { key: 'sm', query: '(min-width: 640px)' },
-] as const;
+const toQuery = (bp: Breakpoint) =>
+  bp.startsWith('max-')
+    ? `(max-width: ${BREAKPOINTS[bp.slice(4) as keyof typeof BREAKPOINTS] - 1}px)`
+    : `(min-width: ${BREAKPOINTS[bp as keyof typeof BREAKPOINTS]}px)`;
 
 /**
- * Hook to get responsive values based on breakpoints (mobile-first).
- * Returns the value for the largest matching breakpoint or DEFAULT.
+ * Hook to get responsive values based on breakpoints.
+ * Returns the value for the first matching breakpoint or DEFAULT.
+ * For max-* breakpoints, matches in declared order. For min breakpoints,
+ * returns the first match (largest breakpoint wins).
  *
  * @param map - An object with DEFAULT (required) and optional breakpoint values.
  * @returns The value for the matching breakpoint or DEFAULT.
- *
- * @example
- * ```tsx
- * // String values
- * const fontSize = useMediaQuery({
- *   DEFAULT: 'text-sm',
- *   sm: 'text-base',
- *   lg: 'text-xl'
- * });
- * // Returns 'text-xl' on large screens, 'text-base' on small, 'text-sm' otherwise
- *
- * // Number values
- * const columns = useMediaQuery({
- *   DEFAULT: 1,
- *   sm: 2,
- *   lg: 3,
- *   xl: 4
- * });
- * // Returns 4 columns on xl, 3 on lg, 2 on sm, 1 otherwise
- *
- * // Mixed types
- * const component = useMediaQuery({
- *   DEFAULT: <MobileNav />,
- *   lg: <DesktopNav />
- * });
- * // Returns DesktopNav on large screens, MobileNav otherwise
- *
- * // With explicit type
- * const value = useMediaQuery<string | number>({
- *   DEFAULT: 'base',
- *   md: 123
- * });
- * ```
  */
 export function useMediaQuery<T>(map: MediaQueryMap<T>): T;
 /**
  * Hook to check if a media query matches (boolean check).
  * Supports Tailwind breakpoints or custom media queries.
- *
- * @param query - The Tailwind breakpoint ('sm' | 'md' | 'lg' | 'xl' | '2xl') or custom query string.
- * @returns A boolean indicating whether the media query matches.
- *
- * @example
- * ```tsx
- * // Tailwind breakpoints
- * const isMobile = useMediaQuery('md'); // true when screen >= 768px
- * const isLarge = useMediaQuery('lg'); // true when screen >= 1024px
- *
- * // Custom media queries
- * const isDark = useMediaQuery('(prefers-color-scheme: dark)');
- * const isPortrait = useMediaQuery('(orientation: portrait)');
- * const isReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
- *
- * return (
- *   <div className={isMobile ? 'mobile-layout' : 'desktop-layout'}>
- *     {isDark && <DarkModeToggle />}
- *   </div>
- * );
- * ```
  */
-export function useMediaQuery(
-  query: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | `(${string})`,
-): boolean;
+export function useMediaQuery(query: Breakpoint | `(${string})`): boolean;
 
 export function useMediaQuery<T>(
-  input: MediaQueryMap<T> | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | `(${string})`,
+  input: MediaQueryMap<T> | Breakpoint | `(${string})`,
 ): T | boolean {
   if (isMediaQueryMap<T>(input)) {
+    const entries = React.useMemo(
+      () =>
+        Object.keys(input)
+          .filter(
+            (k): k is Breakpoint =>
+              k !== 'DEFAULT' && input[k as Breakpoint] !== undefined,
+          )
+          .map((k) => ({
+            key: k,
+            query: toQuery(k),
+            value: input[k as Breakpoint]!,
+          })),
+      [...Object.keys(input).map((k) => input[k as Breakpoint])],
+    );
+
     const [value, setValue] = React.useState<T>(() => {
       if (isSSR) return input.DEFAULT;
-
-      for (const bp of BREAKPOINT_CONFIGS) {
-        const bpValue = input[bp.key];
-        if (bpValue !== undefined && window.matchMedia(bp.query).matches) {
-          return bpValue;
-        }
+      for (const { query, value } of entries) {
+        if (window.matchMedia(query).matches) return value;
       }
       return input.DEFAULT;
     });
 
-    const inputRef = React.useRef(input);
-    inputRef.current = input;
+    const entriesRef = React.useRef(entries);
+    entriesRef.current = entries;
 
     React.useEffect(() => {
       if (typeof window === 'undefined') return;
 
       const updateValue = () => {
-        const currentInput = inputRef.current;
-        for (const bp of BREAKPOINT_CONFIGS) {
-          const bpValue = currentInput[bp.key];
-          if (bpValue !== undefined && window.matchMedia(bp.query).matches) {
-            setValue(bpValue);
+        for (const { query, value } of entriesRef.current) {
+          if (window.matchMedia(query).matches) {
+            setValue(value);
             return;
           }
         }
-        setValue(currentInput.DEFAULT);
+        setValue(input.DEFAULT);
       };
 
-      const listeners: MediaQueryList[] = [];
-      for (const bp of BREAKPOINT_CONFIGS) {
-        if (input[bp.key] !== undefined) {
-          const mql = window.matchMedia(bp.query);
-          mql.addEventListener('change', updateValue);
-          listeners.push(mql);
-        }
-      }
+      const listeners = entriesRef.current.map(({ query }) => {
+        const mql = window.matchMedia(query);
+        mql.addEventListener('change', updateValue);
+        return mql;
+      });
 
       updateValue();
 
@@ -139,27 +96,14 @@ export function useMediaQuery<T>(
           mql.removeEventListener('change', updateValue);
         }
       };
-    }, [input.DEFAULT, input['2xl'], input.lg, input.md, input.sm, input.xl]);
+    }, [input.DEFAULT, entries]);
 
     return value;
   }
 
-  const parsedQuery = React.useMemo(() => {
-    switch (input) {
-      case 'sm':
-        return '(min-width: 640px)';
-      case 'md':
-        return '(min-width: 768px)';
-      case 'lg':
-        return '(min-width: 1024px)';
-      case 'xl':
-        return '(min-width: 1280px)';
-      case '2xl':
-        return '(min-width: 1536px)';
-      default:
-        return input;
-    }
-  }, [input]);
+  const parsedQuery = input.startsWith('(')
+    ? input
+    : toQuery(input as Breakpoint);
 
   const [matches, setMatches] = React.useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
