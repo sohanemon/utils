@@ -57,7 +57,11 @@ export function ScrollableMarker() {
       }
     };
 
-    requestIdleCallback(() => scanTree(root));
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(() => scanTree(root));
+    } else {
+      setTimeout(() => scanTree(root), 0);
+    }
 
     const observer = new MutationObserver((mutations) => {
       for (const m of mutations) {

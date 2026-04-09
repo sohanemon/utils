@@ -24,7 +24,7 @@ export function useSchedule(options: ScheduleOpts = {}) {
       };
 
       if ('requestIdleCallback' in window) {
-        requestIdleCallback(exec, { timeout });
+        window.requestIdleCallback(exec, { timeout });
       } else {
         _schedule(exec);
       }
