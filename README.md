@@ -185,12 +185,14 @@ const { scrolledPast, direction } = useScrollTracker({ threshold: 300 });
 ```
 
 #### UI Components
-
 ```tsx
-import { HtmlInjector, ResponsiveIndicator, Iconify } from '@sohanemon/utils';
+import { HtmlInjector, ResponsiveIndicator, Portal, Iconify } from '@sohanemon/utils';
 
 <HtmlInjector html="<p>Injected HTML</p>" />
 <ResponsiveIndicator />
+<Portal container="#modal-root">
+  <Modal />
+</Portal>
 <Iconify icon="mdi:home" />
 ```
 
@@ -486,6 +488,11 @@ ResponsiveIndicator: React.Component<{
 ScrollableMarker: React.Component<{
   className?: string;
   children?: React.ReactNode;
+}>
+
+Portal: React.Component<{
+  children: React.ReactNode;
+  container: `#${string}` | `.${string}` | `[${string}]` | React.RefObject<HTMLElement>;
 }>
 ```
 
