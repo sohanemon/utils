@@ -31,11 +31,216 @@ describe('cn', () => {
 });
 
 describe('isLinkActive', () => {
-  it('should check if link is active with locales', () => {
-    expect(isLinkActive({ path: '/home', currentPath: '/en/home' })).toBe(true);
-    expect(isLinkActive({ path: '/home', currentPath: '/en/about' })).toBe(
-      false,
-    );
+  describe('exact match (default)', () => {
+    it('should match identical paths', () => {
+      expect(
+        isLinkActive({ targetPath: '/about', currentPath: '/about' }),
+      ).toBe(true);
+    });
+
+    it('should not match different paths', () => {
+      expect(isLinkActive({ targetPath: '/about', currentPath: '/home' })).toBe(
+        false,
+      );
+    });
+
+    it('should not match when currentPath is a child', () => {
+      expect(
+        isLinkActive({ targetPath: '/about', currentPath: '/about/team' }),
+      ).toBe(false);
+    });
+  });
+
+  describe('locale stripping', () => {
+    it('should match when currentPath has a locale prefix', () => {
+      expect(
+        isLinkActive({ targetPath: '/home', currentPath: '/en/home' }),
+      ).toBe(true);
+      expect(
+        isLinkActive({ targetPath: '/home', currentPath: '/fr/home' }),
+      ).toBe(true);
+      expect(
+        isLinkActive({ targetPath: '/home', currentPath: '/de/home' }),
+      ).toBe(true);
+      expect(
+        isLinkActive({ targetPath: '/home', currentPath: '/zh/home' }),
+      ).toBe(true);
+      expect(
+        isLinkActive({ targetPath: '/home', currentPath: '/bn/home' }),
+      ).toBe(true);
+    });
+
+    it('should not match when currentPath has a locale prefix but different path', () => {
+      expect(
+        isLinkActive({ targetPath: '/home', currentPath: '/en/about' }),
+      ).toBe(false);
+    });
+
+    it('should not strip unknown locale prefixes', () => {
+      expect(
+        isLinkActive({ targetPath: '/home', currentPath: '/jp/home' }),
+      ).toBe(false);
+    });
+
+    it('should support custom locales', () => {
+      expect(
+        isLinkActive({
+          targetPath: '/home',
+          currentPath: '/jp/home',
+          locales: ['jp'],
+        }),
+      ).toBe(true);
+    });
+  });
+
+  describe('query string and hash stripping', () => {
+    it('should match when currentPath has a query string', () => {
+      expect(
+        isLinkActive({
+          targetPath: '/keywords',
+          currentPath: '/keywords?asin=123&page=1',
+        }),
+      ).toBe(true);
+    });
+
+    it('should match when currentPath has a hash fragment', () => {
+      expect(
+        isLinkActive({
+          targetPath: '/keywords',
+          currentPath: '/keywords#section',
+        }),
+      ).toBe(true);
+    });
+
+    it('should match when currentPath has both query string and hash', () => {
+      expect(
+        isLinkActive({
+          targetPath: '/keywords',
+          currentPath: '/keywords?page=1#section',
+        }),
+      ).toBe(true);
+    });
+
+    it('should match when currentPath has locale, query string, and hash', () => {
+      expect(
+        isLinkActive({
+          targetPath: '/keywords',
+          currentPath: '/en/keywords?page=1#section',
+        }),
+      ).toBe(true);
+    });
+  });
+
+  describe('prefix match (exact: false)', () => {
+    it('should match when currentPath starts with targetPath', () => {
+      expect(
+        isLinkActive({
+          targetPath: '/blog',
+          currentPath: '/blog/post-1',
+          exact: false,
+        }),
+      ).toBe(true);
+    });
+
+    it('should match exact path with exact: false', () => {
+      expect(
+        isLinkActive({
+          targetPath: '/blog',
+          currentPath: '/blog',
+          exact: false,
+        }),
+      ).toBe(true);
+    });
+
+    it('should not match when currentPath does not start with targetPath', () => {
+      expect(
+        isLinkActive({
+          targetPath: '/blog',
+          currentPath: '/about/team',
+          exact: false,
+        }),
+      ).toBe(false);
+    });
+
+    it('should handle locale with prefix match', () => {
+      expect(
+        isLinkActive({
+          targetPath: '/blog',
+          currentPath: '/en/blog/post-1',
+          exact: false,
+        }),
+      ).toBe(true);
+    });
+  });
+
+  describe('regex targetPath', () => {
+    it('should match dynamic routes', () => {
+      expect(
+        isLinkActive({
+          targetPath: /^products\/\d+$/,
+          currentPath: '/products/123',
+        }),
+      ).toBe(true);
+    });
+
+    it('should not match when regex does not match', () => {
+      expect(
+        isLinkActive({
+          targetPath: /^products\/\d+$/,
+          currentPath: '/products/abc',
+        }),
+      ).toBe(false);
+    });
+
+    it('should strip locale before testing regex', () => {
+      expect(
+        isLinkActive({
+          targetPath: /^products\/\d+$/,
+          currentPath: '/en/products/456',
+        }),
+      ).toBe(true);
+    });
+
+    it('should strip query string before testing regex', () => {
+      expect(
+        isLinkActive({
+          targetPath: /^products\/\d+$/,
+          currentPath: '/products/123?color=red',
+        }),
+      ).toBe(true);
+    });
+
+    it('should ignore exact flag when targetPath is a RegExp', () => {
+      expect(
+        isLinkActive({
+          targetPath: /^blog/,
+          currentPath: '/blog/post-1',
+          exact: true,
+        }),
+      ).toBe(true);
+    });
+  });
+
+  describe('edge cases', () => {
+    it('should handle root path', () => {
+      expect(isLinkActive({ targetPath: '/', currentPath: '/' })).toBe(true);
+      expect(isLinkActive({ targetPath: '/', currentPath: '/en/' })).toBe(true);
+    });
+
+    it('should handle trailing slashes', () => {
+      expect(
+        isLinkActive({ targetPath: '/about/', currentPath: '/about' }),
+      ).toBe(true);
+      expect(
+        isLinkActive({ targetPath: '/about', currentPath: '/about/' }),
+      ).toBe(true);
+    });
+
+    it('should handle multiple leading slashes', () => {
+      expect(
+        isLinkActive({ targetPath: '//about', currentPath: '/about' }),
+      ).toBe(true);
+    });
   });
 });
 

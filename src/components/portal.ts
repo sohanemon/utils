@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 /**
@@ -43,15 +43,17 @@ interface PortalProps {
 
 export function Portal({ children, container }: PortalProps) {
   const targetRef = useRef<Element | null>(null);
+  const [mounted, setMounted] = useState(false);
 
-  if (!targetRef.current) {
+  useLayoutEffect(() => {
     targetRef.current =
       typeof container === 'string'
         ? document.querySelector(container)
         : container.current;
-  }
+    setMounted(true);
+  }, []);
 
-  if (!targetRef.current) return null;
+  if (!mounted || !targetRef.current) return null;
 
   return createPortal(children, targetRef.current);
 }

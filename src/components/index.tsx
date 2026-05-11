@@ -5,6 +5,7 @@
 export { Icon as Iconify } from '@iconify/react';
 export { HtmlInjector } from './html-injector';
 export { MediaWrapper } from './media-wrapper';
+export { Portal } from './portal';
 export {
   ResponsiveIndicator,
   ResponsiveIndicator as TailwindIndicator,

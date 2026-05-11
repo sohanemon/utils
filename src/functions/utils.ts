@@ -44,52 +44,72 @@ export function isNavActive(href: string, path: string): boolean {
  *
  * Compares paths while ignoring locale prefixes (e.g., /en/, /fr/) for consistent
  * navigation highlighting across different language versions of the same page.
+ * Query strings and hash fragments are stripped before comparison.
  *
  * @param params - Parameters object.
- * @param params.path - The target path of the link.
- * @param params.currentPath - The current browser path.
+ * @param params.targetPath - The target path of the link. Accepts a string or RegExp.
+ * @param params.currentPath - The current browser path (e.g., `window.location.pathname`).
  * @param params.locales - Supported locale prefixes to ignore during comparison.
- * @param params.exact - Whether to require exact path match (default: true). If false, checks if current path starts with target path.
- * @returns True if the link is active, false otherwise.
+ * @param params.exact - Whether to require exact path match (default: `true`). Ignored when `targetPath` is a RegExp.
+ * @returns `true` if the link is active, `false` otherwise.
  *
  * @example
- * ```ts
  * // Exact match
- * isLinkActive({ path: '/about', currentPath: '/about' }) // true
- * isLinkActive({ path: '/about', currentPath: '/about/team' }) // false
+ * isLinkActive({ targetPath: '/about', currentPath: '/about' }) // true
+ * isLinkActive({ targetPath: '/about', currentPath: '/about/team' }) // false
  *
+ * @example
+ * // Query strings and hashes are ignored
+ * isLinkActive({ targetPath: '/keywords', currentPath: '/keywords?asin=123&page=1' }) // true
+ * isLinkActive({ targetPath: '/keywords', currentPath: '/keywords#section' }) // true
+ *
+ * @example
  * // With locales
- * isLinkActive({ path: '/about', currentPath: '/en/about' }) // true
- * isLinkActive({ path: '/about', currentPath: '/fr/about' }) // true
+ * isLinkActive({ targetPath: '/about', currentPath: '/en/about' }) // true
+ * isLinkActive({ targetPath: '/about', currentPath: '/fr/about' }) // true
  *
- * // Partial match
- * isLinkActive({ path: '/blog', currentPath: '/blog/post-1', exact: false }) // true
- * ```
+ * @example
+ * // Partial match (exact: false)
+ * isLinkActive({ targetPath: '/blog', currentPath: '/blog/post-1', exact: false }) // true
+ * isLinkActive({ targetPath: '/blog', currentPath: '/blog/post-1', exact: true })  // false
+ *
+ * @example
+ * // Regex for dynamic routes
+ * isLinkActive({ targetPath: /^products\/\d+$/, currentPath: '/products/123' })   // true
+ * isLinkActive({ targetPath: /^products\/\d+$/, currentPath: '/en/products/456' }) // true
+ * isLinkActive({ targetPath: /^products\/\d+$/, currentPath: '/products/abc' })   // false
  */
 export function isLinkActive({
-  path,
+  targetPath,
   currentPath,
   locales = ['en', 'es', 'de', 'zh', 'bn', 'fr', 'it', 'nl'],
   exact = true,
 }: {
-  path: string;
+  targetPath: string | RegExp;
   currentPath: string;
   locales?: string[];
   exact?: boolean;
 }): boolean {
   const localeRegex = new RegExp(`^/?(${locales.join('|')})/`);
+
   const normalizePath = (p: string): string => {
     return p
-      .replace(localeRegex, '') // Remove localization prefix (e.g., en/, fr/, etc.)
+      .replace(/[?#].*$/, '') // Strip query string and hash
+      .replace(localeRegex, '') // Strip locale prefix (e.g., /en/, /fr/)
       .replace(/^\/+|\/+$/g, ''); // Trim leading and trailing slashes
   };
 
-  const normalizedPath = normalizePath(path);
   const normalizedCurrentPath = normalizePath(currentPath);
 
+  if (targetPath instanceof RegExp) {
+    return targetPath.test(normalizedCurrentPath);
+  }
+
+  const normalizedTargetPath = normalizePath(targetPath);
+
   return exact
-    ? normalizedPath === normalizedCurrentPath
-    : normalizedCurrentPath.startsWith(normalizedPath);
+    ? normalizedTargetPath === normalizedCurrentPath
+    : normalizedCurrentPath.startsWith(normalizedTargetPath);
 }
 
 /**
