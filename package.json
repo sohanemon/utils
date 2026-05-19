@@ -82,7 +82,7 @@
     "tsdown": "^0.16.4",
     "typedoc": "^0.28.15",
     "typedoc-plugin-markdown": "^4.9.0",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.0",
     "vite": "npm:rolldown-vite@^7.2.5",
     "vitest": "^4.0.14"
   },
