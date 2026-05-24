@@ -34,7 +34,7 @@ import { createPortal } from 'react-dom';
  */
 interface PortalProps {
   children: React.ReactNode;
-  container:
+  container?:
     | `#${string}`
     | `.${string}`
     | `[${string}]`
@@ -46,10 +46,14 @@ export function Portal({ children, container }: PortalProps) {
   const [mounted, setMounted] = useState(false);
 
   useLayoutEffect(() => {
-    targetRef.current =
-      typeof container === 'string'
-        ? document.querySelector(container)
-        : container.current;
+    if (!container) {
+      targetRef.current = document.body;
+    } else {
+      targetRef.current =
+        typeof container === 'string'
+          ? document.querySelector(container)
+          : container.current;
+    }
     setMounted(true);
   }, []);
 
