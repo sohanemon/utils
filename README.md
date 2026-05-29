@@ -17,7 +17,7 @@
 - **Cookie Management**: Functions to set, get, delete, and check for cookies.
 - **Class Name Merging**: A utility to merge class names with Tailwind CSS and custom logic.
 - **React Hooks**: Hooks for media queries, effects, state management (local/session storage, URL params), DOM calculations, async operations, scheduling, and more.
-- **UI Components**: React components for HTML injection, media wrapping, responsive indicators, scrollable markers, and Iconify icons.
+- **UI Components**: React components for HTML injection, media wrapping, responsive indicators, scrollable markers, mount-after delays, and Iconify icons.
 - **TypeScript Types**: Advanced utility types for deep partials, requireds, readonly, guards, and type-level logic gates.
 - **Browser Utilities**: Clipboard operations, scroll management, SSR detection, and more.
 
@@ -186,9 +186,12 @@ const { scrolledPast, direction } = useScrollTracker({ threshold: 300 });
 
 #### UI Components
 ```tsx
-import { HtmlInjector, ResponsiveIndicator, Portal, Iconify } from '@sohanemon/utils';
+import { HtmlInjector, MountAfter, ResponsiveIndicator, Portal, Iconify } from '@sohanemon/utils';
 
 <HtmlInjector html="<p>Injected HTML</p>" />
+<MountAfter delay={300} fallback={<Spinner />}>
+  <ExpensiveComponent />
+</MountAfter>
 <ResponsiveIndicator />
 <Portal container="#modal-root">
   <Modal />
@@ -483,6 +486,12 @@ MediaWrapper: React.Component<{
 ResponsiveIndicator: React.Component<{
   className?: string;
   showText?: boolean;
+}>
+
+MountAfter: React.Component<{
+  delay?: number;
+  fallback?: React.ReactNode;
+  children: React.ReactNode;
 }>
 
 ScrollableMarker: React.Component<{
