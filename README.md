@@ -432,6 +432,16 @@ useIntersection(options?: UseIntersectionOptions): {
   isIntersecting: boolean;
 }
 
+useInView<T extends Element = Element>(
+  options?: InViewOptions
+): [React.RefObject<T | null>, boolean]
+
+useViewEffect<T extends Element = Element>(
+  event: 'in' | 'out',
+  callback: () => void,
+  options?: InViewOptions
+): React.RefObject<T | null>
+
 useIsScrolling(): {
   isScrolling: boolean;
   scrollableContainerRef: React.RefObject<HTMLElement>;
@@ -502,6 +512,14 @@ ScrollableMarker: React.Component<{
 Portal: React.Component<{
   children: React.ReactNode;
   container: `#${string}` | `.${string}` | `[${string}]` | React.RefObject<HTMLElement>;
+}>
+
+RenderInView: React.Component<{
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+  mode?: 'persist' | 'unmount';
+  preserveSpace?: boolean;
+  options?: InViewOptions;
 }>
 ```
 

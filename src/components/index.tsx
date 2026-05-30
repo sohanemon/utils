@@ -8,6 +8,7 @@ export { HtmlInjector } from './html-injector';
 export { MediaWrapper } from './media-wrapper';
 export { MountAfter } from './mount-after';
 export { Portal } from './portal';
+export { RenderInView } from './render-in-view';
 export {
   ResponsiveIndicator,
   ResponsiveIndicator as TailwindIndicator,

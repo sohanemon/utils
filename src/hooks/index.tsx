@@ -5,6 +5,7 @@ import { copyToClipboard } from '../functions';
 
 export * from './action';
 export * from './async';
+export * from './in-view';
 export * from './media-query';
 export * from './schedule';
 export * from './scroll-tracker';
