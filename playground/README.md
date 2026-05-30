@@ -8,10 +8,14 @@ This playground demonstrates:
 
 - **Components:**
   - `ResponsiveIndicator` - Shows current responsive breakpoint
+  - `RenderInView` - Lazy-renders children on viewport entry
   - `ScrollTracker` - Provides scroll tracking context
   - `ScrollableMarker` - Automatically marks scrollable elements
 
 - **Hooks:**
+  - `useInView` - IntersectionObserver-driven visibility boolean
+  - `useViewEffect` - Fires callback on viewport enter/exit
+  - `useWorker` - Offloads heavy compute to a Web Worker
   - `useMediaQuery` - Responsive breakpoint detection
   - `useDebounce` - Debounced state updates
   - `useLocalStorage` - Persistent local storage state

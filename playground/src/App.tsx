@@ -1,7 +1,13 @@
 import * as React from 'react';
-import { useState } from 'react';
-import { useMediaQuery, useWorker } from '../../src/hooks';
+import { useRef, useState } from 'react';
+import { RenderInView } from '../../src/components/render-in-view';
 import { ResponsiveIndicator } from '../../src/components/responsive-indicator.tsx';
+import {
+  useInView,
+  useMediaQuery,
+  useViewEffect,
+  useWorker,
+} from '../../src/hooks';
 
 // 1. Shared heavy compute
 const heavyCompute = (iterations: number): { result: number; time: number } => {
@@ -316,8 +322,166 @@ function App() {
             </div>
           </div>
         </section>
+
+        {/* In-View Demo Section */}
+        <section className="bg-white rounded-lg p-6 shadow-sm">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            👀 In-View Hooks &amp; RenderInView
+          </h2>
+          <InViewDemo />
+        </section>
       </div>
       <ResponsiveIndicator />
+    </div>
+  );
+}
+
+function InViewDemo() {
+  const inViewRef = useRef<HTMLDivElement>(null);
+  const inView = useInView({ ref: inViewRef, rootMargin: '100px', once: true });
+
+  const viewEffectRef = useRef<HTMLDivElement>(null);
+  const [count, setCount] = useState(0);
+  useViewEffect({
+    ref: viewEffectRef,
+    event: 'in',
+    callback: () => setCount((c) => c + 1),
+    rootMargin: '100px',
+  });
+
+  return (
+    <div className="space-y-8">
+      {/* useInView */}
+      <div>
+        <h3 className="text-lg font-semibold text-gray-800 mb-3">useInView</h3>
+        <p className="text-sm text-gray-600 mb-3">
+          Scroll down — the card flashes green when it enters the viewport
+          (once).
+        </p>
+        <div className="h-[600px] bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-sm mb-3">
+          ↑ spacer (scroll down)
+        </div>
+        <div
+          ref={inViewRef}
+          className={`p-6 rounded-lg border-2 transition-colors duration-500 ${
+            inView
+              ? 'bg-green-100 border-green-500 text-green-800'
+              : 'bg-gray-100 border-gray-300 text-gray-500'
+          }`}
+        >
+          <div className="text-2xl mb-2">{inView ? '👀' : '🙈'}</div>
+          <div className="font-medium">
+            {inView ? 'In View! (persisted)' : 'Waiting to enter viewport...'}
+          </div>
+          <div className="text-xs opacity-75 mt-1">
+            once: true, rootMargin: 100px
+          </div>
+        </div>
+        <div className="h-[300px] bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-sm">
+          ↓ spacer (scroll down)
+        </div>
+      </div>
+
+      {/* useViewEffect */}
+      <div>
+        <h3 className="text-lg font-semibold text-gray-800 mb-3">
+          useViewEffect
+        </h3>
+        <p className="text-sm text-gray-600 mb-3">
+          Fires a callback each time this element enters the viewport.
+        </p>
+        <div className="h-[400px] bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-sm mb-3">
+          ↑ spacer (scroll down)
+        </div>
+        <div
+          ref={viewEffectRef}
+          className="p-6 rounded-lg border-2 border-purple-300 bg-purple-50"
+        >
+          <div className="text-2xl mb-2">🎯</div>
+          <div className="font-medium text-purple-800">
+            Entered {count} time{count !== 1 ? 's' : ''}
+          </div>
+          <div className="text-xs text-purple-600 mt-1">
+            event: &quot;in&quot;, rootMargin: 100px
+          </div>
+        </div>
+        <div className="h-[300px] bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-sm">
+          ↓ spacer
+        </div>
+      </div>
+
+      {/* RenderInView */}
+      <div>
+        <h3 className="text-lg font-semibold text-gray-800 mb-3">
+          RenderInView
+        </h3>
+        <p className="text-sm text-gray-600 mb-3">
+          Children only mount when scrolled into view. Three modes below.
+        </p>
+
+        {/* persist */}
+        <div className="mb-4">
+          <h4 className="font-medium text-gray-700 mb-2">
+            mode=&quot;persist&quot; (stays mounted after first view)
+          </h4>
+          <RenderInView
+            options={{ rootMargin: '100px' }}
+            fallback={
+              <div className="p-4 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 text-gray-400 text-center">
+                ⏳ Waiting to enter viewport...
+              </div>
+            }
+          >
+            <div className="p-4 rounded-lg border-2 border-green-300 bg-green-50">
+              <span className="font-semibold text-green-800">
+                ✅ Mounted! I'll stay here forever now.
+              </span>
+            </div>
+          </RenderInView>
+        </div>
+
+        {/* unmount */}
+        <div className="mb-4">
+          <h4 className="font-medium text-gray-700 mb-2">
+            mode=&quot;unmount&quot; (re-mounts on re-enter)
+          </h4>
+          <RenderInView
+            mode="unmount"
+            options={{ rootMargin: '100px' }}
+            fallback={
+              <div className="p-4 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 text-gray-400 text-center">
+                👻 I vanish when you scroll away
+              </div>
+            }
+          >
+            <div className="p-4 rounded-lg border-2 border-orange-300 bg-orange-50">
+              <span className="font-semibold text-orange-800">
+                🔄 I mounted! Scroll away and I'll disappear.
+              </span>
+            </div>
+          </RenderInView>
+        </div>
+
+        {/* preserveSpace */}
+        <div>
+          <h4 className="font-medium text-gray-700 mb-2">
+            preserveSpace (prevents layout shift on mount)
+          </h4>
+          <RenderInView
+            preserveSpace
+            options={{ rootMargin: '100px' }}
+            mode="unmount"
+            fallback={<div />}
+          >
+            <div className="p-4 rounded-lg border-2 border-blue-300 bg-blue-50">
+              <span className="font-semibold text-blue-800">
+                📏 I reserved space before mounting — no layout jump!
+              </span>
+              <div className="h-24 bg-blue-200 rounded mt-2" />
+            </div>
+          </RenderInView>
+        </div>
+      </div>
     </div>
   );
 }

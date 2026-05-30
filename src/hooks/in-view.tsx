@@ -41,43 +41,53 @@ export function createObserver(
   }, [rootMargin, once]);
 }
 
+export interface UseInViewParams<T extends Element = Element>
+  extends InViewOptions {
+  ref: RefObject<T | null>;
+}
+
 /**
- * Returns a ref and a boolean indicating whether the element is in view.
+ * Observes the element via the provided ref and returns whether it's in view.
  *
  * @example
- * const [ref, inView] = useInView({ once: true });
+ * const ref = useRef<HTMLDivElement>(null);
+ * const inView = useInView({ ref, once: true });
  * <div ref={ref}>{inView ? 'visible' : 'hidden'}</div>
  */
 export function useInView<T extends Element = Element>(
-  options: InViewOptions = {},
-): [RefObject<T | null>, boolean] {
-  const ref = useRef<T>(null);
+  params: UseInViewParams<T>,
+): boolean {
+  const { ref, ...options } = params;
   const [inView, setInView] = useState(false);
 
   createObserver(ref as RefObject<Element | null>, setInView, options);
 
-  return [ref, inView];
+  return inView;
 }
 
 type ViewEvent = 'in' | 'out';
 
+export interface UseViewEffectParams<T extends Element = Element>
+  extends InViewOptions {
+  ref: RefObject<T | null>;
+  /** Side effect to run on the event. */
+  callback: () => void;
+  /** `"in"` fires when entering, `"out"` fires when exiting. */
+  event?: ViewEvent;
+}
+
 /**
  * Runs a callback when the element enters or exits the viewport.
  *
- * @param event   - `"in"` fires when entering, `"out"` fires when exiting
- * @param callback - Side effect to run on the event
- * @param options  - IntersectionObserver options
- *
  * @example
- * const ref = useViewEffect('in', () => startAnimation(), { once: true });
+ * const ref = useRef<HTMLDivElement>(null);
+ * useViewEffect({ ref, event: 'in', callback: () => startAnimation(), once: true });
  * <div ref={ref} />
  */
 export function useViewEffect<T extends Element = Element>(
-  event: ViewEvent,
-  callback: () => void,
-  options: InViewOptions = {},
-): RefObject<T | null> {
-  const ref = useRef<T>(null);
+  params: UseViewEffectParams<T>,
+): void {
+  const { ref, event = 'in', callback, ...options } = params;
   const callbackRef = useRef(callback);
 
   useEffect(() => {
@@ -92,6 +102,4 @@ export function useViewEffect<T extends Element = Element>(
     },
     options,
   );
-
-  return ref;
 }

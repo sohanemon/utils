@@ -1,4 +1,5 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render } from '@testing-library/react';
+import { useRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useInView, useViewEffect } from '../../src/hooks/in-view';
 
@@ -51,10 +52,11 @@ function UseInViewHarness({
   options,
   onInView,
 }: {
-  options?: Parameters<typeof useInView>[0];
+  options?: { rootMargin?: string; once?: boolean };
   onInView?: (inView: boolean) => void;
 }) {
-  const [ref, inView] = useInView(options);
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView({ ref, ...options });
   onInView?.(inView);
   return <div ref={ref} data-testid="target" />;
 }
@@ -66,9 +68,10 @@ function UseViewEffectHarness({
 }: {
   event: 'in' | 'out';
   callback: () => void;
-  options?: Parameters<typeof useViewEffect>[2];
+  options?: { rootMargin?: string; once?: boolean };
 }) {
-  const ref = useViewEffect(event, callback, options);
+  const ref = useRef<HTMLDivElement>(null);
+  useViewEffect({ ref, event, callback, ...options });
   return <div ref={ref} data-testid="target" />;
 }
 
@@ -173,7 +176,12 @@ describe('useViewEffect', () => {
   it('should use latest callback via ref (no stale closure on re-render)', () => {
     let captured = '_none_';
     const Hello = ({ msg }: { msg: string }) => {
-      const ref = useViewEffect('in', () => { captured = msg; });
+      const ref = useRef<HTMLDivElement>(null);
+      useViewEffect({
+        ref,
+        event: 'in',
+        callback: () => { captured = msg; },
+      });
       return <div ref={ref} data-testid="target" />;
     };
 

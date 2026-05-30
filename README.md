@@ -432,15 +432,19 @@ useIntersection(options?: UseIntersectionOptions): {
   isIntersecting: boolean;
 }
 
-useInView<T extends Element = Element>(
-  options?: InViewOptions
-): [React.RefObject<T | null>, boolean]
+useInView<T extends Element = Element>(params: {
+  ref: React.RefObject<T | null>;
+  rootMargin?: string;
+  once?: boolean;
+}): boolean
 
-useViewEffect<T extends Element = Element>(
-  event: 'in' | 'out',
-  callback: () => void,
-  options?: InViewOptions
-): React.RefObject<T | null>
+useViewEffect<T extends Element = Element>(params: {
+  ref: React.RefObject<T | null>;
+  event?: 'in' | 'out';
+  callback: () => void;
+  rootMargin?: string;
+  once?: boolean;
+}): void
 
 useIsScrolling(): {
   isScrolling: boolean;
