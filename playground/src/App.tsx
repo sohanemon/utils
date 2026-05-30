@@ -344,8 +344,7 @@ function InViewDemo() {
   const [count, setCount] = useState(0);
   useViewEffect({
     ref: viewEffectRef,
-    event: 'in',
-    callback: () => setCount((c) => c + 1),
+    onEnter: () => setCount((c) => c + 1),
     rootMargin: '100px',
   });
 
@@ -402,7 +401,7 @@ function InViewDemo() {
             Entered {count} time{count !== 1 ? 's' : ''}
           </div>
           <div className="text-xs text-purple-600 mt-1">
-            event: &quot;in&quot;, rootMargin: 100px
+            onEnter, rootMargin: 100px
           </div>
         </div>
         <div className="h-[300px] bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-sm">

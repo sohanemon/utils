@@ -1,4 +1,5 @@
 # Code Style
+- Prefer named callbacks (`onEnter`, `onExit`) over event-type discriminators (`event: 'in' | 'out'` + single `callback`) for viewport/hook APIs. Confidence: 0.65
 - Extract shared browser API observer logic into reusable hooks rather than inlining in components. Confidence: 0.65
 - Group related configuration props into an `options` object (e.g., `options?: InViewOptions` with `rootMargin` and `once`) instead of flat standalone props. Confidence: 0.65
 - Passthrough components (like `RenderInView`) should use `<>...</>` fragments, not wrapping elements with `className`/`style`. Confidence: 0.70

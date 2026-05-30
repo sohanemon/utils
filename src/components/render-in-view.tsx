@@ -83,6 +83,7 @@ export function RenderInView({
         ref={sentinelRef}
         aria-hidden
         style={{
+          position: 'absolute',
           display: 'block',
           width: 0,
           height: 0,

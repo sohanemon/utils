@@ -440,8 +440,8 @@ useInView<T extends Element = Element>(params: {
 
 useViewEffect<T extends Element = Element>(params: {
   ref: React.RefObject<T | null>;
-  event?: 'in' | 'out';
-  callback: () => void;
+  onEnter?: () => void;
+  onExit?: () => void;
   rootMargin?: string;
   once?: boolean;
 }): void

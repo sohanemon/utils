@@ -65,40 +65,40 @@ export function useInView<T extends Element = Element>(
   return inView;
 }
 
-type ViewEvent = 'in' | 'out';
-
 export interface UseViewEffectParams<T extends Element = Element>
   extends InViewOptions {
   ref: RefObject<T | null>;
-  /** Side effect to run on the event. */
-  callback: () => void;
-  /** `"in"` fires when entering, `"out"` fires when exiting. */
-  event?: ViewEvent;
+  /** Fires when the element enters the viewport. */
+  onEnter?: () => void;
+  /** Fires when the element exits the viewport. */
+  onExit?: () => void;
 }
 
 /**
- * Runs a callback when the element enters or exits the viewport.
+ * Runs callbacks when the element enters or exits the viewport.
  *
  * @example
  * const ref = useRef<HTMLDivElement>(null);
- * useViewEffect({ ref, event: 'in', callback: () => startAnimation(), once: true });
+ * useViewEffect({ ref, onEnter: () => startAnimation(), once: true });
  * <div ref={ref} />
  */
 export function useViewEffect<T extends Element = Element>(
   params: UseViewEffectParams<T>,
 ): void {
-  const { ref, event = 'in', callback, ...options } = params;
-  const callbackRef = useRef(callback);
+  const { ref, onEnter, onExit, ...options } = params;
+  const onEnterRef = useRef(onEnter);
+  const onExitRef = useRef(onExit);
 
   useEffect(() => {
-    callbackRef.current = callback;
+    onEnterRef.current = onEnter;
+    onExitRef.current = onExit;
   });
 
   createObserver(
     ref as RefObject<Element | null>,
     (inView) => {
-      if (event === 'in' && inView) callbackRef.current();
-      if (event === 'out' && !inView) callbackRef.current();
+      if (inView) onEnterRef.current?.();
+      else onExitRef.current?.();
     },
     options,
   );

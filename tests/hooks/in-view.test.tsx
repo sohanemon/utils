@@ -62,16 +62,16 @@ function UseInViewHarness({
 }
 
 function UseViewEffectHarness({
-  event,
-  callback,
+  onEnter,
+  onExit,
   options,
 }: {
-  event: 'in' | 'out';
-  callback: () => void;
+  onEnter?: () => void;
+  onExit?: () => void;
   options?: { rootMargin?: string; once?: boolean };
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  useViewEffect({ ref, event, callback, ...options });
+  useViewEffect({ ref, onEnter, onExit, ...options });
   return <div ref={ref} data-testid="target" />;
 }
 
@@ -141,46 +141,59 @@ describe('useInView', () => {
 });
 
 describe('useViewEffect', () => {
-  it('should fire callback on "in" event when intersecting', () => {
-    const callback = vi.fn();
-    render(<UseViewEffectHarness event="in" callback={callback} />);
+  it('should fire onEnter when intersecting', () => {
+    const onEnter = vi.fn();
+    render(<UseViewEffectHarness onEnter={onEnter} />);
 
     triggerIntersection(true);
-    expect(callback).toHaveBeenCalledTimes(1);
+    expect(onEnter).toHaveBeenCalledTimes(1);
   });
 
-  it('should not fire callback on "in" event when not intersecting', () => {
-    const callback = vi.fn();
-    render(<UseViewEffectHarness event="in" callback={callback} />);
+  it('should not fire onEnter when not intersecting', () => {
+    const onEnter = vi.fn();
+    render(<UseViewEffectHarness onEnter={onEnter} />);
 
     triggerIntersection(false);
-    expect(callback).not.toHaveBeenCalled();
+    expect(onEnter).not.toHaveBeenCalled();
   });
 
-  it('should fire callback on "out" event when leaving viewport', () => {
-    const callback = vi.fn();
-    render(<UseViewEffectHarness event="out" callback={callback} />);
+  it('should fire onExit when leaving viewport', () => {
+    const onExit = vi.fn();
+    render(<UseViewEffectHarness onExit={onExit} />);
 
     triggerIntersection(false);
-    expect(callback).toHaveBeenCalledTimes(1);
+    expect(onExit).toHaveBeenCalledTimes(1);
   });
 
-  it('should not fire callback on "out" event when intersecting', () => {
-    const callback = vi.fn();
-    render(<UseViewEffectHarness event="out" callback={callback} />);
+  it('should not fire onExit when intersecting', () => {
+    const onExit = vi.fn();
+    render(<UseViewEffectHarness onExit={onExit} />);
 
     triggerIntersection(true);
-    expect(callback).not.toHaveBeenCalled();
+    expect(onExit).not.toHaveBeenCalled();
   });
 
-  it('should use latest callback via ref (no stale closure on re-render)', () => {
+  it('should fire both onEnter and onExit at correct times', () => {
+    const onEnter = vi.fn();
+    const onExit = vi.fn();
+    render(<UseViewEffectHarness onEnter={onEnter} onExit={onExit} />);
+
+    triggerIntersection(true);
+    expect(onEnter).toHaveBeenCalledTimes(1);
+    expect(onExit).not.toHaveBeenCalled();
+
+    triggerIntersection(false);
+    expect(onEnter).toHaveBeenCalledTimes(1);
+    expect(onExit).toHaveBeenCalledTimes(1);
+  });
+
+  it('should use latest callbacks via ref (no stale closure on re-render)', () => {
     let captured = '_none_';
     const Hello = ({ msg }: { msg: string }) => {
       const ref = useRef<HTMLDivElement>(null);
       useViewEffect({
         ref,
-        event: 'in',
-        callback: () => { captured = msg; },
+        onEnter: () => { captured = msg; },
       });
       return <div ref={ref} data-testid="target" />;
     };
@@ -198,7 +211,7 @@ describe('useViewEffect', () => {
 
   it('should disconnect on unmount', () => {
     const { unmount } = render(
-      <UseViewEffectHarness event="in" callback={vi.fn()} />,
+      <UseViewEffectHarness onEnter={vi.fn()} />,
     );
     unmount();
     expect(mockDisconnect).toHaveBeenCalledTimes(1);
