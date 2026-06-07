@@ -19,7 +19,7 @@
 - **React Hooks**: Hooks for media queries, effects, state management (local/session storage, URL params), DOM calculations, async operations, scheduling, and more.
 - **UI Components**: React components for HTML injection, media wrapping, responsive indicators, scrollable markers, mount-after delays, and Iconify icons.
 - **TypeScript Types**: Advanced utility types for deep partials, requireds, readonly, guards, and type-level logic gates.
-- **Browser Utilities**: Clipboard operations, scroll management, SSR detection, and more.
+- **Browser Utilities**: Clipboard operations, scroll management, DOM element resolution, SSR detection, and more.
 
 ## Installation
 
@@ -146,6 +146,28 @@ import { debounce, throttle } from '@sohanemon/utils';
 
 const debouncedFunction = debounce(() => console.log('Debounced!'), 300);
 const throttledFunction = throttle(() => console.log('Throttled!'), 300);
+```
+
+#### Browser Utilities
+
+```typescript
+import { resolveSelector, waitForElement, scrollTo, copyToClipboard } from '@sohanemon/utils';
+
+// Resolve a CSS selector or React ref to an element
+const container = resolveSelector('#sidebar');
+// Falls back to document.documentElement if not found
+
+// Wait for a dynamically inserted element
+const el = await waitForElement({
+  selector: '.lazy-loaded',
+  document: '#root',
+});
+
+// Scroll a container
+scrollTo('#chat-panel', 'bottom');
+
+// Copy text to clipboard
+copyToClipboard('Copied!');
 ```
 
 #### React Hooks
@@ -323,7 +345,14 @@ getClientSideCookie(name: string): { value: string | undefined }
 
 #### Browser Utilities
 ```typescript
+resolveSelector(selector: string | React.RefObject<HTMLDivElement>): HTMLElement
 copyToClipboard(value: string, onSuccess?: () => void): void
+
+waitForElement(params: {
+  selector: string;
+  document: string | React.RefObject<HTMLDivElement>;
+  timeout?: number; // default 5000
+}): Promise<Element>
 
 scrollTo(
   containerSelector: string | React.RefObject<HTMLDivElement>,

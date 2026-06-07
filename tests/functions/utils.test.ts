@@ -15,7 +15,9 @@ import {
   cn,
   isLinkActive,
   isSSR,
+  resolveSelector,
   svgToBase64,
+  waitForElement,
 } from '../../src/functions/utils';
 
 describe('cn', () => {
@@ -334,6 +336,149 @@ describe('svgToBase64', () => {
     expect(result.length).toBeGreaterThan(0);
   });
 });
+
+describe('resolveSelector', () => {
+  it('should return element matching a CSS selector', () => {
+    const div = document.createElement('div');
+    div.id = 'test-target';
+    document.body.appendChild(div);
+
+    const result = resolveSelector('#test-target');
+    expect(result).toBe(div);
+
+    document.body.removeChild(div);
+  });
+
+  it('should return document.documentElement when selector matches nothing', () => {
+    const result = resolveSelector('#nonexistent-element');
+    expect(result).toBe(document.documentElement);
+  });
+
+  it('should return element from React ref when current is set', () => {
+    const div = document.createElement('div');
+    const ref = { current: div };
+
+    const result = resolveSelector(ref);
+    expect(result).toBe(div);
+  });
+
+  it('should return document.documentElement when React ref is null', () => {
+    const ref = { current: null };
+
+    const result = resolveSelector(ref);
+    expect(result).toBe(document.documentElement);
+  });
+});
+
+describe('waitForElement', () => {
+  it('should resolve immediately if element already exists', async () => {
+    const div = document.createElement('div');
+    div.id = 'immediate-target';
+    document.body.appendChild(div);
+
+    const result = await waitForElement({
+      selector: '#immediate-target',
+      document: document,
+    });
+    expect(result).toBe(div);
+
+    document.body.removeChild(div);
+  });
+
+  it('should resolve when element appears in the DOM', async () => {
+    const resultPromise = waitForElement({
+      selector: '.deferred-target',
+      document: document,
+    });
+
+    const div = document.createElement('div');
+    div.className = 'deferred-target';
+    document.body.appendChild(div);
+
+    const result = await resultPromise;
+    expect(result).toBe(div);
+
+    document.body.removeChild(div);
+  });
+
+  it('should resolve with element from a custom root container', async () => {
+    const root = document.createElement('div');
+    root.id = 'custom-root';
+    document.body.appendChild(root);
+
+    const resultPromise = waitForElement({
+      selector: '.nested-target',
+      document: '#custom-root',
+    });
+
+    const child = document.createElement('span');
+    child.className = 'nested-target';
+    root.appendChild(child);
+
+    const result = await resultPromise;
+    expect(result).toBe(child);
+
+    document.body.removeChild(root);
+  });
+
+  it('should fall back to document.documentElement when root selector is invalid', async () => {
+    const resultPromise = waitForElement({
+      selector: '.any-target',
+      document: '#nonexistent-root',
+    });
+
+    const div = document.createElement('div');
+    div.className = 'any-target';
+    document.body.appendChild(div);
+
+    const result = await resultPromise;
+    expect(result).toBe(div);
+
+    document.body.removeChild(div);
+  });
+});
+
+  it('should reject when element does not appear within timeout', async () => {
+    await expect(
+      waitForElement({
+        selector: '.never-inserted',
+        document: document,
+        timeout: 10,
+      }),
+    ).rejects.toThrow(
+      'waitForElement timed out after 10ms for selector ".never-inserted"',
+    );
+  });
+
+  it('should respect custom timeout value', async () => {
+    const resultPromise = waitForElement({
+      selector: '.late-target',
+      document: document,
+      timeout: 100,
+    });
+
+    const div = document.createElement('div');
+    div.className = 'late-target';
+    document.body.appendChild(div);
+
+    await expect(resultPromise).resolves.toBe(div);
+    document.body.removeChild(div);
+  });
+
+  it('should not time out when timeout is Infinity', async () => {
+    const resultPromise = waitForElement({
+      selector: '.infinity-target',
+      document: document,
+      timeout: Infinity,
+    });
+
+    const div = document.createElement('div');
+    div.className = 'infinity-target';
+    document.body.appendChild(div);
+
+    await expect(resultPromise).resolves.toBe(div);
+    document.body.removeChild(div);
+  });
 
 describe('core functions compatibility', () => {
   it('convertToNormalCase should match local implementation', () => {

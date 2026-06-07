@@ -136,7 +136,7 @@ export function cleanSrc(src: string) {
 
   return cleanedSrc.trim();
 }
-type Selector = string | React.RefObject<HTMLDivElement>;
+type Selector = React.RefObject<HTMLElement | Document> | string;
 
 /**
  * Resolves a container element from a CSS selector string or a React ref.
@@ -152,14 +152,25 @@ type Selector = string | React.RefObject<HTMLDivElement>;
  * const el = resolveSelector(containerRef);
  * ```
  */
-export const resolveSelector = (selector: Selector): HTMLElement => {
+export function resolveSelector(
+  selector?: React.RefObject<Document> | null,
+): Document;
+export function resolveSelector(
+  selector?: React.RefObject<HTMLElement> | string | null,
+): HTMLElement;
+export function resolveSelector(
+  selector?: React.RefObject<HTMLElement | Document> | string | null,
+): HTMLElement | Document;
+export function resolveSelector(
+  selector?: React.RefObject<HTMLElement | Document> | string | null,
+): HTMLElement | Document {
   if (typeof selector === 'string') {
     return (
       document.querySelector<HTMLElement>(selector) ?? document.documentElement
     );
   }
-  return selector.current ?? document.documentElement;
-};
+  return selector?.current ?? document.documentElement;
+}
 
 /**
  * Smoothly scrolls to the top or bottom of a specified container.
@@ -317,45 +328,50 @@ export function goToClientSideHash(id: string, opts?: ScrollIntoViewOptions) {
 }
 
 /**
- * Waits for a DOM element matching a CSS selector to appear in the document.
+ * Waits for a DOM element matching a CSS selector to appear within a container.
  *
  * Checks immediately — if the element already exists, resolves synchronously.
  * Otherwise uses a `MutationObserver` to watch for it and resolves when found.
  * The observer is disconnected after the first match.
+ * Rejects if the element does not appear within the timeout period.
  *
  * @param params - Parameters object.
  * @param params.selector - CSS selector string to match the target element.
- * @param params.document - The `Document` instance to observe (e.g. `document` in a browser,
- *   or a mock for testing). Accepts nullable for SSR compatibility.
+ * @param params.document - A CSS selector or React ref identifying the root container
+ *   to observe. Resolved via `resolveSelector`. Falls back to `document.documentElement`.
+ * @param params.timeout - Max wait duration in milliseconds (default 5000).
+ *   Set to `Infinity` to wait indefinitely.
  * @returns A promise that resolves with the first matching `Element`.
+ * @throws {Error} If the element is not found within the timeout.
  *
  * @example
  * ```ts
  * const el = await waitForElement({
  *   selector: '#dynamic-content',
- *   document,
+ *   document: '#root',
  * });
  * ```
  */
 export const waitForElement = ({
   document,
   selector,
+  timeout = 5000,
 }: {
-  document: Selector;
+  document?: Selector;
   selector: string;
+  timeout?: number;
 }): Promise<Element> => {
   const doc = resolveSelector(document);
 
-  return new Promise((resolve) => {
-    // Already exists? Return immediately
-    const el = doc?.querySelector(selector);
+  return new Promise((resolve, reject) => {
+    const el = doc.querySelector(selector);
     if (el) return resolve(el);
 
-    // Otherwise observe DOM mutations
     const observer = new MutationObserver(() => {
-      const el = doc?.querySelector(selector);
+      const el = doc.querySelector(selector);
       if (el) {
         observer.disconnect();
+        clearTimeout(timer);
         resolve(el);
       }
     });
@@ -364,5 +380,14 @@ export const waitForElement = ({
       childList: true,
       subtree: true,
     });
+
+    const timer = setTimeout(() => {
+      observer.disconnect();
+      reject(
+        new Error(
+          `waitForElement timed out after ${timeout}ms for selector "${selector}"`,
+        ),
+      );
+    }, timeout);
   });
 };
