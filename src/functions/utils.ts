@@ -136,6 +136,30 @@ export function cleanSrc(src: string) {
 
   return cleanedSrc.trim();
 }
+type Selector = string | React.RefObject<HTMLDivElement>;
+
+/**
+ * Resolves a container element from a CSS selector string or a React ref.
+ * Falls back to `document.documentElement` if the selector yields no match
+ * or the ref is unattached.
+ *
+ * @param selector - A CSS selector string or a React ref pointing to the container.
+ * @returns The resolved `HTMLElement`, or `document.documentElement` as fallback.
+ *
+ * @example
+ * ```ts
+ * const el = resolveSelector('#sidebar');
+ * const el = resolveSelector(containerRef);
+ * ```
+ */
+export const resolveSelector = (selector: Selector): HTMLElement => {
+  if (typeof selector === 'string') {
+    return (
+      document.querySelector<HTMLElement>(selector) ?? document.documentElement
+    );
+  }
+  return selector.current ?? document.documentElement;
+};
 
 /**
  * Smoothly scrolls to the top or bottom of a specified container.
@@ -159,22 +183,12 @@ export const scrollTo = (
   containerSelector: string | React.RefObject<HTMLDivElement>,
   to: 'top' | 'bottom',
 ) => {
-  let container: HTMLDivElement | null;
+  const container = resolveSelector(containerSelector);
 
-  if (typeof containerSelector === 'string') {
-    container = document.querySelector(containerSelector);
-  } else if (containerSelector.current) {
-    container = containerSelector.current;
-  } else {
-    return;
-  }
-
-  if (container) {
-    container.scrollTo({
-      top: to === 'top' ? 0 : container.scrollHeight - container.clientHeight,
-      behavior: 'smooth',
-    });
-  }
+  container.scrollTo({
+    top: to === 'top' ? 0 : container.scrollHeight - container.clientHeight,
+    behavior: 'smooth',
+  });
 };
 
 /**
@@ -301,3 +315,54 @@ export function goToClientSideHash(id: string, opts?: ScrollIntoViewOptions) {
   el.scrollIntoView({ behavior: 'smooth', block: 'start', ...opts });
   window.history.pushState(null, '', `#${id}`);
 }
+
+/**
+ * Waits for a DOM element matching a CSS selector to appear in the document.
+ *
+ * Checks immediately — if the element already exists, resolves synchronously.
+ * Otherwise uses a `MutationObserver` to watch for it and resolves when found.
+ * The observer is disconnected after the first match.
+ *
+ * @param params - Parameters object.
+ * @param params.selector - CSS selector string to match the target element.
+ * @param params.document - The `Document` instance to observe (e.g. `document` in a browser,
+ *   or a mock for testing). Accepts nullable for SSR compatibility.
+ * @returns A promise that resolves with the first matching `Element`.
+ *
+ * @example
+ * ```ts
+ * const el = await waitForElement({
+ *   selector: '#dynamic-content',
+ *   document,
+ * });
+ * ```
+ */
+export const waitForElement = ({
+  document,
+  selector,
+}: {
+  document: Selector;
+  selector: string;
+}): Promise<Element> => {
+  const doc = resolveSelector(document);
+
+  return new Promise((resolve) => {
+    // Already exists? Return immediately
+    const el = doc?.querySelector(selector);
+    if (el) return resolve(el);
+
+    // Otherwise observe DOM mutations
+    const observer = new MutationObserver(() => {
+      const el = doc?.querySelector(selector);
+      if (el) {
+        observer.disconnect();
+        resolve(el);
+      }
+    });
+
+    observer.observe(doc, {
+      childList: true,
+      subtree: true,
+    });
+  });
+};
