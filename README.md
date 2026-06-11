@@ -519,11 +519,19 @@ Iconify: React.Component (from @iconify/react)
 
 HtmlInjector: React.Component<{ html: string; className?: string }>
 
+Media: React.Component<{
+  breakpoint: Breakpoint;
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+}>
+
 MediaWrapper: React.Component<{
-  src: string;
-  alt?: string;
+  breakpoint: Breakpoint;
+  as?: React.ElementType;
+  fallback?: React.ElementType;
   className?: string;
-  lazy?: boolean;
+  classNameFallback?: string;
+  [key: string]: any;
 }>
 
 ResponsiveIndicator: React.Component<{

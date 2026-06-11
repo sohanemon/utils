@@ -16,7 +16,7 @@ const BREAKPOINTS = {
   '2xl': 1536,
 } as const;
 
-type Breakpoint = keyof typeof BREAKPOINTS | `max-${keyof typeof BREAKPOINTS}`;
+export type Breakpoint = keyof typeof BREAKPOINTS | `max-${keyof typeof BREAKPOINTS}`;
 
 /**
  * Priority order for breakpoint matching (larger min-width first, then max-width)

@@ -1,27 +1,13 @@
 'use client';
 import * as React from 'react';
-import { useMediaQuery } from '../hooks';
+import { useMediaQuery, type Breakpoint } from '../hooks';
 
-/**
- * Supported Tailwind CSS breakpoints for the MediaWrapper component.
- */
-type BreakPoints =
-  | 'sm'
-  | 'md'
-  | 'lg'
-  | 'xl'
-  | '2xl'
-  | 'max-sm'
-  | 'max-md'
-  | 'max-lg'
-  | 'max-xl'
-  | 'max-2xl';
 /**
  * Props for the MediaWrapper component.
  */
 type MediaWrapperProps = React.ComponentProps<'div'> & {
   /** The breakpoint at which to switch between the main component and fallback. */
-  breakpoint: BreakPoints;
+  breakpoint: Breakpoint;
   /** The component to render when the breakpoint matches. Defaults to 'div'. */
   as?: React.ElementType;
   /** The component to render when the breakpoint doesn't match. Defaults to React.Fragment. */
@@ -60,9 +46,8 @@ export function MediaWrapper({
   classNameFallback,
   ...props
 }: MediaWrapperProps) {
-  const overMedia = useMediaQuery(breakpoint.split('-').pop() as `(${string})`);
-  const isMax = breakpoint.startsWith('max');
-  const useFallback = overMedia === isMax;
+  const matches = useMediaQuery(breakpoint);
+  const useFallback = !matches;
 
   // Conditionally determining which component to render,
   // and what className should be passed to it.

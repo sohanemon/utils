@@ -5,6 +5,7 @@
 export { Icon as Iconify } from '@iconify/react';
 export * from './closest';
 export { HtmlInjector } from './html-injector';
+export { Media } from './media';
 export { MediaWrapper } from './media-wrapper';
 export { MountAfter } from './mount-after';
 export { Portal } from './portal';
