@@ -129,13 +129,14 @@ export function isLinkActive({
  * ```
  */
 export function cleanSrc(src: string) {
-  let cleanedSrc = src;
-  if (src.includes('/public/')) {
+  let cleanedSrc = src.trim();
+  if (src.startsWith('/public/')) {
     cleanedSrc = src.replace('/public/', '/');
   }
 
-  return cleanedSrc.trim();
+  return cleanedSrc;
 }
+
 type Selector = React.RefObject<HTMLElement | Document> | string;
 
 /**
