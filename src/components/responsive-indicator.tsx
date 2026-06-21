@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import { useMediaQuery } from '../hooks';
+import { useLocalStorage, useMediaQuery } from '../hooks';
 
 type Side = 'bottom-left' | 'bottom-right' | 'top-right' | 'top-left';
 
@@ -41,10 +41,9 @@ export const ResponsiveIndicator: React.FC<ResponsiveIndicatorProps> = ({
   offset = 2,
   unit = 'rem',
 }) => {
-  const [currentSide, setCurrentSide] = React.useState<Side>(
-    side ?? 'bottom-left',
-  );
-
+  const [{ side: currentSide }, setStored] = useLocalStorage('responsive-indicator-side', {
+    side: side ?? ('bottom-left' as Side),
+  });
   const breakpoint = useMediaQuery({
     DEFAULT: 'xs',
     sm: 'sm',
@@ -83,7 +82,7 @@ export const ResponsiveIndicator: React.FC<ResponsiveIndicatorProps> = ({
   const handleClick = () => {
     const currentIndex = sides.indexOf(currentSide);
     const nextIndex = (currentIndex + 1) % sides.length;
-    setCurrentSide(sides[nextIndex]!);
+    setStored({ side: sides[nextIndex]! });
   };
 
   return (
